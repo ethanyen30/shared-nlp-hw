@@ -61,7 +61,7 @@ write any code for this, however.
 2. (Optional) Store necessary data in the constructor so you can do
 classification later.
 
-3. Modify the _sg_update_ function to perform updates.
+3. Modify the _sg_update_ function to perform updates (Use dot product to first compute the prediction. Compute the error by subtracting against gold labels--`train_example.y`...).
 
 Extra credit:
 
