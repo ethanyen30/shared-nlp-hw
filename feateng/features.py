@@ -66,8 +66,20 @@ class LengthFeature(Feature):
 
         
         
+class GuessBlankFeature(Feature):
+    """
+    Is guess blank?
+    """
+    def __call__(self, question, run, guess, other_guesses=None):
+        yield ('true', len(guess) == 0)
 
 
+class GuessCapitalsFeature(Feature):
+    """
+    Capital letters in guess
+    """
+    def __call__(self, question, run, guess, other_guesses=None):
+        yield ('true', log(sum(i.isupper() for i in guess) + 1))
 
 
 if __name__ == "__main__":
@@ -79,23 +91,23 @@ if __name__ == "__main__":
     """
     import argparse
     
-    from parameters import add_general_params, add_question_params, \
+    from params import add_general_params, add_question_params, \
         add_buzzer_params, add_guesser_params, setup_logging, \
         load_guesser, load_questions, load_buzzer
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--json_guess_output', type=str)
     add_general_params(parser)    
-    guesser_params = add_guesser_params(parser)
-    buzzer_params = add_buzzer_params(parser)    
+    add_guesser_params(parser)
+    add_buzzer_params(parser)    
     add_question_params(parser)
 
     flags = parser.parse_args()
 
     setup_logging(flags)
 
-    guesser = load_guesser(flags, guesser_params)
-    buzzer = load_buzzer(flags, buzzer_params)
+    guesser = load_guesser(flags)
+    buzzer = load_buzzer(flags)
     questions = load_questions(flags)
 
     buzzer.add_data(questions)

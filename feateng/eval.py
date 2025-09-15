@@ -7,7 +7,7 @@ import string
 
 from tqdm import tqdm
 
-from parameters import load_guesser, load_questions, load_buzzer, \
+from params import load_guesser, load_questions, load_buzzer, \
     add_buzzer_params, add_guesser_params, add_general_params,\
     add_question_params, setup_logging
 
@@ -131,7 +131,7 @@ def pretty_feature_print(features, first_features=["guess", "answer", "id"]):
     return "\n".join(lines)
 
 
-def eval_buzzer(buzzer, questions, history_length, history_depth):
+def eval_buzzer(buzzer, questions):
     """
     Compute buzzer outcomes on a dataset
     """
@@ -140,7 +140,7 @@ def eval_buzzer(buzzer, questions, history_length, history_depth):
     
     buzzer.load()
     buzzer.add_data(questions)
-    buzzer.build_features(history_length=history_length, history_depth=history_depth)
+    buzzer.build_features()
     
     predict, feature_matrix, feature_dict, correct, metadata = buzzer.predict(questions)
 
@@ -203,9 +203,9 @@ if __name__ == "__main__":
     
     parser = argparse.ArgumentParser()
     add_general_params(parser)
-    guesser_params = add_guesser_params(parser)
-    question_params = add_question_params(parser)
-    buzzer_params = add_buzzer_params(parser)
+    add_guesser_params(parser)
+    add_question_params(parser)
+    add_buzzer_params(parser)
 
     parser.add_argument('--evaluate', default="buzzer", type=str)
     parser.add_argument('--cutoff', default=-1, type=int)    
@@ -214,12 +214,10 @@ if __name__ == "__main__":
     setup_logging(flags)
 
     questions = load_questions(flags)
-    guesser = load_guesser(flags, guesser_params, load=flags.load)    
+    guesser = load_guesser(flags, load=flags.load)    
     if flags.evaluate == "buzzer":
-        buzzer = load_buzzer(flags, buzzer_params, load=True)
-        outcomes, examples, unseen = eval_buzzer(buzzer, questions,
-                                                 history_length=flags.buzzer_history_length,
-                                                 history_depth=flags.buzzer_history_depth)
+        buzzer = load_buzzer(flags, load=True)
+        outcomes, examples, unseen = eval_buzzer(buzzer, questions)
     elif flags.evaluate == "guesser":
         if flags.cutoff >= 0:
             outcomes, examples = eval_retrieval(guesser, questions, flags.num_guesses, flags.cutoff)

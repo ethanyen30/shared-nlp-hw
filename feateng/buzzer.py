@@ -15,7 +15,7 @@ from collections import defaultdict
 
 from guesser import add_guesser_params
 from features import LengthFeature
-from parameters import add_buzzer_params, add_question_params, load_guesser, load_buzzer, load_questions, add_general_params, setup_logging, Parameters
+from params import add_buzzer_params, add_question_params, load_guesser, load_buzzer, load_questions, add_general_params, setup_logging
 
 def runs(text, run_length):
     """
@@ -49,15 +49,7 @@ def sentence_runs(sentences, run_length):
             yield previous + run
         previous += sentence
         previous += "  "
-
-class BuzzerParameters(Parameters):
-    buzzer_params = [("filename", str, "models/buzzer", "Where we save buzzer")]
-
-    def __init__(self):
-        Parameters.__init__(self)
-        self.params += self.buzzer_params
-                     
-        
+    
 class Buzzer:
     """
     Base class for any system that can decide if a guess is correct or not.
@@ -223,7 +215,6 @@ class Buzzer:
             guess_history = defaultdict(dict)
             for guesser in question_guesses:
                 # print("Building history with depth %i and length %i" % (history_depth, history_length))
-                # TODO(jbg): I think this is inefficient, shouldn't this be using question_guesses, not all_guesses?
                 guess_history[guesser] = dict((time, guess[:history_depth]) for time, guess in enumerate(all_guesses[guesser]) if time < question_index and time > question_index - history_length)
 
             # print(guess_history)
@@ -338,15 +329,15 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
     add_general_params(parser)
-    guesser_params = add_guesser_params(parser)
-    buzzer_params = add_buzzer_params(parser)
-    question_params = add_question_params(parser)
+    add_guesser_params(parser)
+    add_buzzer_params(parser)
+    add_question_params(parser)
     flags = parser.parse_args()
     setup_logging(flags)    
 
-    guesser = load_guesser(flags, guesser_params)    
-    buzzer = load_buzzer(flags, buzzer_params)
-    questions = load_questions(flags, question_params)
+    guesser = load_guesser(flags)    
+    buzzer = load_buzzer(flags)
+    questions = load_questions(flags)
 
     buzzer.add_data(questions)
     buzzer.build_features(flags.buzzer_history_length,

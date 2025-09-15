@@ -15,13 +15,13 @@ from nltk.tokenize import sent_tokenize, word_tokenize
 
 alphanum = re.compile('[^a-zA-Z0-9]')
 
-from parameters import load_guesser, load_questions, setup_logging
-from parameters import add_general_params, add_guesser_params, add_general_params, add_question_params
+from params import load_guesser, load_questions, setup_logging
+from params import add_general_params, add_guesser_params, add_general_params, add_question_params
 
-kTOY_DATA = {"tiny": [{"text": "currency england", "page": "Pound"},
-                      {"text": "currency russia", "page": "Rouble"},
-                      {"text": "capital russia", "page": "Moscow"},                      
-                      {"text": "capital england", "page": "London"}],
+kTOY_DATA = {"tiny": [{"text": "capital England", "page": "London"},
+                      {"text": "capital Russia", "page": "Moscow"},
+                      {"text": "currency England", "page": "Pound"},
+                      {"text": "currency Russia", "page": "Rouble"}],
              "train": [{'page': 'Maine', 'text': 'For 10 points, name this New England state with capital at Augusta.'},
                        {'page': 'Massachusetts', 'text': 'For ten points, identify this New England state with capital at Boston.'},
                        {'page': 'Boston', 'text': 'For 10 points, name this city in New England, the capital of Massachusetts.'},
@@ -35,14 +35,14 @@ kTOY_DATA = {"tiny": [{"text": "currency england", "page": "Pound"},
                        {'page': 'Rhode_Island', 'text': "This colony's Touro Synagogue is the oldest in the United States."},
                        {'page': 'Lima', 'text': 'It is the site of the National University of San Marcos, the oldest university in South America.'},
                        {'page': 'College_of_William_&_Mary', 'text': 'For 10 points, identify this oldest public university in the United States, a college in Virginia named for two monarchs.'}],
-              "dev": [{'text': "This capital of England", "top": 'Maine', "second": 'Boston'},
-                      {'text': "The author of Pride and Prejudice", "top": 'Jane_Austen',
+              "dev": [{'text': "This capital of England.", "top": 'Maine', "second": 'Boston'},
+                      {'text': "The author of Pride and Prejudice.", "top": 'Jane_Austen',
                            "second": 'Jane_Austen'},
-                      {'text': "The composer of the Magic Flute", "top": 'Wolfgang_Amadeus_Mozart',
+                      {'text': "The composer of the Magic Flute.", "top": 'Wolfgang_Amadeus_Mozart',
                            "second": 'Wolfgang_Amadeus_Mozart'},
-                      {'text': "The economic law that says 'good money drives out bad'",
+                      {'text': "The economic law that says 'good money drives out bad'.",
                            "top": "Gresham's_law", "second": "Gresham's_law"},
-                      {'text': "located outside Boston, the oldest University in the United States",
+                      {'text': "Located outside Boston, the oldest University in the United States.",
                            "top": 'College_of_William_&_Mary', "second": 'Rhode_Island'}]
                 }
 
@@ -74,7 +74,8 @@ def print_guess(guess, max_char=20):
             output += "%s:%s\t" % (ii, short)
             
     return output
-    
+
+
 class Guesser:
     """
     Base class for guessers.  If it itself is instantiated, it will only guess
@@ -252,20 +253,20 @@ class Guesser:
         Generate a guess set from a single question.
         """
         return [{"guess": self._default_guess, "confidence": 1.0}]
-1
+
 
 if __name__ == "__main__":
     # Train a guesser and save it to a file
     import argparse
     parser = argparse.ArgumentParser()
     add_general_params(parser)    
-    guesser_params = add_guesser_params(parser)
-    question_params = add_question_params(parser)
+    add_guesser_params(parser)
+    add_question_params(parser)
 
     flags = parser.parse_args()
 
     setup_logging(flags)    
-    guesser = load_guesser(flags, guesser_params)
+    guesser = load_guesser(flags)
     questions = load_questions(flags)
     # TODO(jbg): Change to use huggingface data, as declared in flags
 
