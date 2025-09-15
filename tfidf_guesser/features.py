@@ -20,6 +20,20 @@ class Feature:
         self.name = name
 
     def __call__(self, question, run, guess, guess_history, other_guesses=None):
+        """
+
+        question -- The JSON object of the original question, you can extract metadata from this such as the category
+
+        run -- The subset of the question that the guesser made a guess on
+
+        guess -- The guess created by the guesser
+
+        guess_history -- Previous guesses (needs to be enabled via command line argument)
+
+        other_guesses -- All guesses for this run
+        """
+
+
         raise NotImplementedError(
             "Subclasses of Feature must implement this function")
 
@@ -34,18 +48,17 @@ class LengthFeature(Feature):
 
     def __call__(self, question, run, guess, guess_history, other_guesses=None):
         # How many characters long is the question?
-        yield ("char", (len(run) - 450) / 450)
+
+        guess_length = 0
 
         # How many words long is the question?
-        yield ("word", (len(run.split()) - 75) / 75)
 
-        ftp = 0
 
         # How many characters long is the guess?
-        if guess is None or guess=="":
-            yield ("guess", -1)
-        else:
-            yield ("guess", log(1 + len(guess)))
+        if guess is None or guess=="":  
+            yield ("guess", -1)         
+        else:                           
+            yield ("guess", guess_length)  
 
             
 
@@ -102,6 +115,6 @@ if __name__ == "__main__":
                           flags.buzzer_history_depth)
 
     vocab = buzzer.write_json(flags.json_guess_output)
-    with open("../data/small_guess.vocab", 'w') as outfile:
+    with open("data/small_guess.vocab", 'w') as outfile:
         for ii in vocab:
             outfile.write("%s\n" % ii)

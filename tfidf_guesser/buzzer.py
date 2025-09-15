@@ -115,7 +115,6 @@ class Buzzer:
         """
         
         features = {}
-        all_guesses = Counter()
         guess = None
 
         # If we didn't cache the guesses, compute them now
@@ -173,6 +172,7 @@ class Buzzer:
         self.finalize()
         
         num_questions = 0
+        logging.info("Generating runs of length %i" % self.run_length)        
         for qq in tqdm(questions):
             answer = qq[answer_field]
             text = qq["text"]
@@ -185,7 +185,7 @@ class Buzzer:
                 del qq["page"]
             del qq["first_sentence"]
             del qq["text"]
-            
+
             for rr in runs(text, self.run_length):
                 self._answers.append(answer)
                 self._runs.append(rr)
