@@ -41,8 +41,9 @@ Getting Started
 
 As usual, install the packages you need, perhaps in a virtual environment:
 
-    python -m venv .venv
-    .venv/bin/pip install -r requirements.txt
+    conda create -n feateng python=3.11
+	conda activate feateng
+	pip install -r requirements.txt
 
 And if NLTK complains about missing stopwords, you can download them:
 
@@ -51,7 +52,7 @@ And if NLTK complains about missing stopwords, you can download them:
 
 You'll also need to create a directory for the models you'll be
 creating
-
+	
      mkdir -p models
 
 But before you get started, you need to understand the overall structure of the code:
