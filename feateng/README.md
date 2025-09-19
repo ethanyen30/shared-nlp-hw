@@ -41,11 +41,12 @@ Getting Started
 
 As usual, install the packages you need, perhaps in a virtual environment:
 
-    python3 -m venv .venv
-    .venv/bin/pip3 install -r requirements.txt
+    python -m venv .venv
+    .venv/bin/pip install -r requirements.txt
 
 And if NLTK complains about missing stopwords, you can download them:
 
+ 	pip install nltk
     python -m nltk.downloader stopwords
 
 You'll also need to create a directory for the models you'll be
