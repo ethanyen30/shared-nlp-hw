@@ -86,25 +86,27 @@ class in ``features.py``.
 
 	class FrequencyFeature:
 	    def __init__(self, name):
-		from eval import normalize_answer
-		self.name = name
-		self.counts = Counter()
-		self.normalize = normalize_answer
-
+	        from eval import normalize_answer
+	        self.name = name
+	        self.counts = Counter()
+	        self.normalize = normalize_answer
+	        
 	    def add_training(self, question_source):
-		import json
-		with gzip.open(question_source) as infile:
-			questions = json.load(infile)
-			for ii in questions:
-			    self.counts[self.normalize(ii["page"])] += 1
+	        import json
+	        with gzip.open(question_source) as infile:
+	            questions = json.load(infile)
+	        for ii in questions:
+	            self.counts[self.normalize(ii["page"])] += 1
+	            
+	    def __call__(self, question, run, guess, guess_history, guesses):
+	        # We only use question, run, and guess (same as before)
+	        # guess_history and guesses are ignored since we don't need them
+	        
+	        frequency_value = log(1 + self.counts[self.normalize(guess)])
+	        return [("guess", frequency_value)]
 
-	    def __call__(self, question, run, guess):
-		   yield ("guess", log(1 + self.counts[self.normalize(guess)]))
 
-
-Pay attention to the ``call`` function.  If you're not familiar with
-the ``yield`` keyword:
-https://realpython.com/introduction-to-python-generators/
+Pay attention to the ``call`` function.
 
 One very easy way of adding features is to just yield something else
 in a function that you already have.
