@@ -252,7 +252,7 @@ be positive), and the buzz position (where in the question it's buzzing).
 
 And now we'll see what it is without the length features:
 
-    Questions Right: 87 (out of 201) Accuracy: 0.76  Buzz ratio: 66.50 Buzz position: -0.255239
+    Questions Right: 81 (out of 201) Accuracy: 0.74  Buzz ratio: 58.50 Buzz position: -0.195907
 
 Again, don't focus too much on the accuracy.  The accuracy is actually higher
 for the no feature model!  But the proportion of "Best" outcomes is higher by
