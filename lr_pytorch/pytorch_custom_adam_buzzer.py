@@ -35,8 +35,7 @@ def sigmoid(score, threshold=20.0):
 
 def create_feature_matrix_sklearn(train_data, test_data=None):
     """
-    Turn Example objects into NumPy feature matrices with sklearn's
-    DictVectorizer.
+    Turn Example objects into NumPy feature matrices with sklearn's DictVectorizer.
 
     Returns
     -------

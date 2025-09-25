@@ -1,6 +1,6 @@
 import unittest
 import torch
-from pytorch_custom_adam_buzzer_sol import ToyLogisticBuzzer, Example, CustomAdamOptimizer
+from pytorch_custom_adam_buzzer import ToyLogisticBuzzer, Example, CustomAdamOptimizer
 
 # ---------------------------------------------------------------------
 # Helper: print feature ↔ weight mapping
