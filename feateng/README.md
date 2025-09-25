@@ -379,7 +379,22 @@ generated the JSON files for the logistic regression homework.
 
     python features.py --json_guess_output=../data/inspect.jsonl --buzzer_guessers 'Gpr' --questions=../data/qanta.buzztrain.json.gz --limit=1000
 
-Make sure that you've enabled all of the features that you want to use.
+Make sure that you've enabled all of the features that you want to
+use.
+
+
+When you run this, you will get two kinds of output.  The first is just a list of your features `data/small_guess.vocab`, which will let you map the integer IDs of your features to the strings that they correspond to.  
+
+The second output is the `json_guess_output` which will have json formatted examples that are exactly the input you used for the logistic regression homework.
+
+<pre>
+{"guess:William Carlos Williams": 1, "Gpr_confidence": -0.34099804599433337, "label": false}
+{"guess:Ishmael": 1, "Gpr_confidence": -0.30784871498, "label": false}
+{"guess:Moby-Dick": 1, "Gpr_confidence": -0.215807037715, "label": false}
+{"guess:Moby-Dick": 1, "Gpr_confidence": -0.17234657054500002,
+"label": false}
+</pre>
+
 
 **Q. Why can't I use ``['page']`` or ``['answer']`` when creating
 features?  Can I use it during training?**
