@@ -23,7 +23,7 @@ Coding (15 points)- `pytorch_custom_adam_buzzer.py`:
 Analysis (5 points):
 
 1. How does the setup differ from the model you learned "by hand" (Logistic regression homework) in terms of initialization, number of parameters, activation?
-2. Look at the top features again.  Do they look consistent with your results for the last homework? **Hint**: run `pytorch_custom_adam_buzzer.py` and `toylogistic_buzzer.py' to compare the magnitude of the top features.
+2. Look at the top features again.  Do they look consistent with your results for the last homework? **Hint**: run `pytorch_custom_adam_buzzer.py` and `toylogistic_buzzer.py` to compare the magnitude of the top features.
 
 
 Simple tests:
