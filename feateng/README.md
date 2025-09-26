@@ -279,11 +279,11 @@ At the end of the eval script, you can see the
 overall accuracy, and the ratio of correct buzzes to incorrect buzzes (should
 be positive), and the buzz position (where in the question it's buzzing).
 
-    Questions Right: 90 (out of 201) Accuracy: 0.75  Buzz ratio: 67.50 Buzz position: 0.054159
+    Questions Right: 90 (out of 201) Accuracy: 0.75  Buzz ratio: .675 Buzz position: 0.054159
 
 And now we'll see what it is without the length features:
 
-    Questions Right: 81 (out of 201) Accuracy: 0.74  Buzz ratio: 58.50 Buzz position: -0.195907
+    Questions Right: 81 (out of 201) Accuracy: 0.74  Buzz ratio: .585 Buzz position: -0.195907
 
 Again, don't focus too much on the accuracy.  The accuracy is actually higher
 for the no feature model!  But the proportion of "Best" outcomes is higher by
@@ -298,11 +298,13 @@ encourage you to keep your features with mean zero and standard
 variance to make your life easier.
 
 Let's see with length:
+
                           Gpr_confidence: 4.4401
                              Length_char: 0.9581
                             Length_guess: -1.0036
                              Length_word: 0.8495
 And without length:
+
                           Gpr_confidence: 5.5703
 
 The classifier with the length is more liketly to buzz later in the question.  If you only have the guesser confidence, then it's obviously correlated with that.  It uses it less if you add in the length as a feature.
@@ -441,14 +443,12 @@ When you run this, you will get two kinds of output.  The first is just a list 
 
 The second output is the `json_guess_output` which will have json formatted examples that are exactly the input you used for the logistic regression homework.
 
-<pre>
-{"guess:William Carlos Williams": 1, "Gpr_confidence": -0.34099804599433337, "label": false}
-{"guess:Ishmael": 1, "Gpr_confidence": -0.30784871498, "label": false}
-{"guess:Moby-Dick": 1, "Gpr_confidence": -0.215807037715, "label": false}
-{"guess:Moby-Dick": 1, "Gpr_confidence": -0.17234657054500002,
-"label": false}
-</pre>
 
+    {"guess:William Carlos Williams": 1, "Gpr_confidence": -0.34099804599433337, "label": false}
+	{"guess:Ishmael": 1, "Gpr_confidence": -0.30784871498, "label": false}
+	{"guess:Moby-Dick": 1, "Gpr_confidence": -0.215807037715, "label": false}
+	{"guess:Moby-Dick": 1, "Gpr_confidence": -0.17234657054500002,
+	"label": false}
 
 **Q. Why can't I use ``['page']`` or ``['answer']`` when creating
 features?  Can I use it during training?**
