@@ -19,27 +19,27 @@ been implemented for you.  If you are over-implementing, you are generating
 extra work for yourself and making yourself vulnerable to errors.
 
 That said, the second part of the homework---doing as well as you can
-buzzing---is meant to be more fun and open-ended.
+buzzing and tuning the guesser(s)---is meant to be more fun and open-ended.
 
 You'll turn in your code on Gradescope.
 
 What you have to do
 ----
 
-Coding (15 points in the tfidf_guesser.py):
+Coding:
 
 1.  (Optional) Store necessary data in the constructor so you can do retrieval later.
 1.  Modify the _train_ function so that the class stores what it needs to store to guess at what the answer is.
 1.  Modify the _call_ function so that it finds the closest indicies (in terms of *cosine* similarity) to the query.
 
-Analysis (5 points):
+Analysis:
 
 1.  What answers get confused with each other most easily?  What kinds of
     mistakes does this guesser make?
 1.  How does this guesser compare to GPT?  (Remember that the cached guesser from the feature engineering homework came from GPT3, so you could either use your old code or adapt with multiple guessers here!)
 1.  Compute recall as you increase the number of guesses (i.e. `max_n_guesses`).
 
-Accuracy (10 points): How well you do on the recall leaderboard.
+Accuracy: How well you do on the recall leaderboard.
 
 What you don't have to do
 -------
@@ -111,7 +111,14 @@ evaluation will use the the uploading model directly.
 5. You can and should use multiple guessers (e.g., it's allowed to use
    the GPT and tf-idf guesser).  You can also create a new guesser.
 
-What makes this more fun than the last feature engineering assignment is that you have full control over the buzzer now, and you get to change what it's producing.  So now you can do more than create features *given* the guesses, you can now fix the guesser's problems as well!
+What makes this more fun than the last feature engineering assignment
+is that you have full control over the buzzer now, and you get to
+change what it's producing.  So now you can do more than create
+features *given* the guesses, you can now fix the guesser's problems
+as well!
+
+You will probably want to play around with different tokenization
+schemes (building on what you learned from the BPE homework).
 
 Example
 -
@@ -511,6 +518,8 @@ For the "Good Enough" threshold, you need to implement tfidf on par
 with the baseline.  You do not need to do additional feature
 engineering.  
 
+The TAs will submit a *baseline* model that you can compare against.
+
 Extra Credit
 -
 
@@ -693,7 +702,8 @@ more matches, so the consensus count is going up.  This is a great
 feature that can help the `Gpr_confidence` actually going down.  
 
 Speaking of, you might want to play around how that confidence is
-computed as well.  Take a look at the cache object (use `buzzdev` below as an example):
+computed as well.  Take a look at the cache object (use `buzzdev`
+below as an example):
 
     zless ../models/buzzdev_gpr_cache.tar.gz
       "After this character relates a story about how he didn't know the proper way to use a wheelbarrow, he": {
@@ -777,7 +787,7 @@ computed as well.  Take a look at the cache object (use `buzzdev` below as an ex
           ]
         }
           	
-You could imagine other ways of using the word piece probabilities
+You could imagine other ways of using the token probabilities
 rather than just taking the arithmetic mean of the log probs (which is
 what the code is currently doing).  As before, the goal is to be
 creative and to understand the data.  Good luck!
@@ -789,9 +799,49 @@ that you've trained it on as much data as possible.  You'll need to
 modify `params.py` so that whatever works best for you is the
 default.  
 
-These submissions will be the foundation for our in-class exposition
+These submissions will be the foundation for an in-class exposition
 game, so please do try to do this extra credit, as this will be one of
 the most fun opportunities we'll have for extra credit in the class.
+
+
+Using Multiple Guessers
+-
+
+Here's an example of training a tf-idf guesser, a Wikipedia guesser,
+and a GPT guesser.
+
+The tf-idf guesser and GPT guesser you already know.  But let's just
+go through that for good measure.
+
+    % ./venv/bin/python3  guesser.py --guesser_type=Tfidf \
+       --question_source=gzjson \
+       --questions=../data/qanta.guesstrain.json.gz \
+    --logging_file=guesser.log
+    Setting up logging
+    INFO:root:Initializing guesser of type Tfidf
+    INFO:root:Loading questions from ../data/qanta.guesstrain.json.gz
+    INFO:root:Read 121984 questions
+    100%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 121984/121984 [00:03<00:00, 38347.91it/s]
+    100%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 32976/32976 [00:00<00:00, 1290049.52it/s]
+    INFO:root:Trained with 596401 questions and 596401 answers filtered from 121984 examples
+    INFO:root:Creating tf-idf dataframe with 596401
+
+I've now made a Wikipedia guesser that uses the information from this
+file: 
+	https://dumps.wikimedia.org/other/kiwix/zim/wikipedia/wikipedia_en_top_nopic_2025-09.zim
+	
+It's much bigger than the Wikipedia JSON we've provided (and so you
+will be need to cull information from it from whatever pkl you
+upload), but this would give you more flexibility.
+
+    % ./venv/bin/python3  guesser.py --guesser_type=Wiki \
+    --question_source=gzjson \
+    --questions=../data/qanta.guesstrain.json.gz \
+    --logging_file=guesser.log \
+    --limit=10
+
+Now that we have guessers trained, let's train a buzzer to predict
+when they're correct.
 
 Hints
 -
@@ -799,7 +849,17 @@ Hints
 1.  Don't use all of the data, especially at first.  Use the _limit_
     command line argument (as in the above example).  Indeed, you
     might be able to improve accuracy by *excluding* some of the data.
-1.  On a related note, don't create a [dense matrix](https://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.csr_matrix.todense.html) out of tf-idf counts.  By default, the tf-idf libraries will create a sparse matrix where only the non-zero elements are allocated memory.  A dense matrix will require way too much space (e.g., if you have 25k terms and 300k documents, that's going to be around 50 GiB, and that's going to be too big for most laptops and certainly for Gradescope).  Any of the operations that you need to do you can do with the sparse matrix.
+	
+1.  On a related note, don't create a [dense
+    matrix](https://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.csr_matrix.todense.html)
+    out of tf-idf counts.  By default, the tf-idf libraries will
+    create a sparse matrix where only the non-zero elements are
+    allocated memory.  A dense matrix will require way too much space
+    (e.g., if you have 25k terms and 300k documents, that's going to
+    be around 50 GiB, and that's going to be too big for most laptops
+    and certainly for Gradescope).  Any of the operations that you
+    need to do you can do with the sparse matrix.
+	
 3.  In case you see an error that your submission timed out on Gradescope, that means that your code needs to be simplified. 
     This is essential for your  code to work on Gradescope, so think of ways
     you can optimize your code.  Another issue if
@@ -817,7 +877,8 @@ Hints
     tokenizer does support n-grams, which may help you in the extra credit (but consume more
     memory):
     https://scikit-learn.org/stable/modules/generated/sklearn.feature_extraction.text.CountVectorizer.html 
-5.  The buzzer leaderboard will report both accuracy and buzz ratio.  Both are important, as you can only decide if a guess is
+5.  The buzzer leaderboard will report both accuracy, buzz ratio, and
+    expected wins.  Both are important, as you can only decide if a guess is
     correct if the correct guess is an option: you can get 100%
     accuracy on the buzzer if all of the guesses are wrong... but your
     buzz position will be horrible.

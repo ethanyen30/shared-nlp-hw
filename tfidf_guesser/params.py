@@ -34,16 +34,16 @@ def add_buzzer_params(parser):
     parser.add_argument('--features', nargs='+', help='Features to feed into Buzzer', type=str,  default=[])  
     parser.add_argument('--buzzer_type', type=str, default="LogisticBuzzer")
     parser.add_argument('--run_length', type=int, default=100)
-    parser.add_argument('--primary_guesser', type=str, default='Tfidf', help="What guesser does buzzer depend on?")
     parser.add_argument('--LogisticBuzzer_filename', type=str, default="models/LogisticBuzzer")    
     
 def add_guesser_params(parser):
-    parser.add_argument('--guesser_type', type=str, default="Tfidf")
+    # TODO (jbg): Remove this argument in favor of the nargs version to make things consistent between guesser and buzzer
+    parser.add_argument('--guesser_type', type=str, default="Tfidf", help="What guesser do we use for guessing when training a single guesser?")
     # TODO (jbg): This is more general than tfidf, make more general (currently being used by DAN guesser as well)
     parser.add_argument('--guesser_min_length', type=int, help="How long (in characters) must text be before it is indexed?", default=50)
     parser.add_argument('--guesser_max_vocab', type=int, help="How big features/vocab set to use", default=10000)
     parser.add_argument('--guesser_answer_field', type=str, default="page", help="Where is the cannonical answer")    
-    parser.add_argument('--guesser_max_length', type=int, help="How long (in characters) must text be to be removed?", default=500)    
+    parser.add_argument('--guesser_max_length', type=int, help="How long (in characters) must text be to be removed?", default=1000)    
     parser.add_argument('--guesser_split_sentence', type=bool, default=True, help="Index sentences rather than paragraphs")
     parser.add_argument('--wiki_min_frequency', type=int, help="How often must wiki page be an answer before it is used", default=10)
     parser.add_argument('--TfidfGuesser_filename', type=str, default="models/TfidfGuesser")
@@ -143,12 +143,6 @@ def instantiate_guesser(guesser_type, flags, load):
         if load:                                                    
             guesser.load()                                          
     if guesser_type == "President":
-        import torch
-    
-        cuda = not flags.no_cuda and torch.cuda.is_available()
-        device = torch.device("cuda" if cuda else "cpu")
-        logging.info("Using device '%s' (cuda flag=%s)" % (device, str(flags.no_cuda)))
-
         from president_guesser import PresidentGuesser, kPRESIDENT_DATA        
         guesser = PresidentGuesser()
         guesser.train(kPRESIDENT_DATA['train'])
@@ -179,16 +173,11 @@ def load_buzzer(flags, load=False):
 
     assert buzzer is not None, "Buzzer (type=%s) not initialized" % flags.buzzer_type
 
-    primary_loaded = 0
     for gg in flags.buzzer_guessers:
         guesser = instantiate_guesser(gg, flags, load=True)
         guesser.load()
         logging.info("Adding %s to Buzzer (total guessers=%i)" % (gg, len(flags.buzzer_guessers)))
-        primary = (gg == flags.primary_guesser or len(flags.buzzer_guessers)==1)
-        buzzer.add_guesser(gg, guesser, primary_guesser=primary)
-        if primary:
-            primary_loaded += 1
-    assert primary_loaded == 1 or (primary_loaded == 0 and flags.primary_guesser=='consensus'), "There must be one primary guesser"
+        buzzer.add_guesser(gg, guesser)
 
     print("Initializing features: %s" % str(flags.features))
     print("dataset: %s" % str(flags.questions))
