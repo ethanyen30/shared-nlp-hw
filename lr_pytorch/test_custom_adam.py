@@ -3,7 +3,7 @@ import torch
 from pytorch_custom_adam_buzzer import ToyLogisticBuzzer, Example, CustomAdamOptimizer
 
 # ---------------------------------------------------------------------
-# Helper: print feature ↔ weight mapping
+# print feature ↔ weight mapping
 # ---------------------------------------------------------------------
 def show_beta(beta_vec, title="β weights"):
     """
@@ -20,7 +20,7 @@ def show_beta(beta_vec, title="β weights"):
     return mapping
 
 
-# Test vocabulary - no bias for PyTorch version since nn.Linear handles it
+# Test vocabulary - PyTorch version since nn.Linear handles biases
 kTOY_VOCAB = ["A", "B", "C", "D"]
 kPOS = Example({"label": True, "A": 4, "B": 3, "C": 1}, kTOY_VOCAB, use_bias=False)
 kNEG = Example({"label": False, "B": 1, "C": 3, "D": 4}, kTOY_VOCAB, use_bias=False)
@@ -42,7 +42,7 @@ class TestCustomAdamLogReg(unittest.TestCase):
         self.assertEqual(optimizer.eps, 1e-8)
         self.assertEqual(optimizer.weight_decay, 0.0)
         
-        # Check that state is initialized for each parameter
+        # check state is initialized for each parameter
         self.assertEqual(len(optimizer.state), 2)  # weight and bias
         for param in optimizer.params:
             state = optimizer.state[param]
