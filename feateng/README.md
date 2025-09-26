@@ -36,6 +36,8 @@ we've covered in the class.  The bare essentials are classifiers,
 information retrieval, and feature engineering, but it may be helpful
 to review our coverage of syntax, semantics, etc.
 
+The other important part of this homework is learning the basics of comparing models.  Through the course of this assignment, you'll create models that you'll need to compare with each other.  You'll save these models as pkl (Pickle) files and upload them to Gradescope to see how well they do on a held-out test set.
+
 Getting Started
 -
 
@@ -208,8 +210,6 @@ Now you need to evaluate the classifier.  The script eval.py will run the classi
  * _aggressive_: Guess was wrong, Buzz was wrong
  * _waiting_: Guess was wrong, Buzz was correct
 
-How to test with and without a feature
--
 
 In the template code that you're given, you have code that will create
 a feature based on the length of properties of the guess.  However,
