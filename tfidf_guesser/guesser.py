@@ -269,7 +269,17 @@ if __name__ == "__main__":
     guesser = load_guesser(flags)
     questions = load_questions(flags)
     # TODO(jbg): Change to use huggingface data, as declared in flags
-
+    if flags.guesser_type == 'Wiki':
+        guesser.init_wiki(flags.wiki_zim_filename)        
+        train_result = guesser.train(questions,
+                                     flags.guesser_answer_field,
+                                     flags.guesser_split_sentence,
+                                     flags.guesser_min_length,
+                                     flags.guesser_max_length,
+                                     flags.wiki_min_frequency)
+        # The WikiGuesser has some results (text from asked about Wikipedia
+        # pages) from saving and we want to cache them to a file
+        guesser.save()
         # The WikiGuesser has some results (text from asked about Wikipedia
         # pages) from saving and we want to cache them to a file
     elif flags.guesser_type == 'President':
