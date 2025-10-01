@@ -514,9 +514,8 @@ to distinguish middling guesses from the top guesses.
 Good Enough
 -
 
-For the "Good Enough" threshold, you need to implement tfidf on par
-with the baseline.  You do not need to do additional feature
-engineering.  
+For the "Good Enough" threshold, you need to implement a tfidf guesser on par
+with the baseline.  You do not need to submit a buzzer.  
 
 The TAs will submit a *baseline* model that you can compare against.
 
