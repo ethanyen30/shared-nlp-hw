@@ -85,12 +85,12 @@ For the guesser submission:
 2. Submit your _analysis.pdf_ file (no more than one page; pictures
     are better than text)
 
-For the extra credit submission:
-1. Submit your _tfidf_guesser.py_ file
+For the extra credit (buzzer) submission:
+1. Submit your _tfidf_guesser.py_ file (the same one for the normal assignment)
 2. Submit the ``TfidfGuesser.answers.pkl``,
    ``TfidfGuesser.questions.pkl``, ``TfidfGuesser.tfidf.pkl`` and the
    ``TfidfGuesser.vectorizer.pkl`` files that encode your model. 
-3. For the extra credit buzzer, also upload your _params.py_ and _features.py_ files and your classifier pickles.
+3. Also upload your _params.py_ and _features.py_ files and your classifier pickles.
     
 
 Extra Credit
@@ -100,10 +100,10 @@ There will be two different places to submit your code on Gradescope:
 one that only tests the guesser, one that specifically tests the
 buzzer.  The guesser evaluation will retrain your model, the buzzer
 evaluation will use the the uploading model directly.  
-1. Optimize the retrieval mechanism by tuning parameters, weighting, and/or using
+1. For the guesser, you can get extra credit by optimizing the retrieval mechanism by tuning parameters, weighting, and/or using
    different tokenizers/vocabularies.
-2. Do well in the overall leaderboard (while overall buzz ratio and accuracy is important, more
-   important is using features that take advantage of tfidf guesser features or
+2. For the buzzer, do well in the buzzer overall leaderboard (while overall buzz ratio and expected wins is important, more
+   important is using features that take advantage of tfidf guesser features, using multiples guesses, or
    multiple guessers.)
 3. Add additional tf-idf guessers (e.g., from the provided Wikipedia pages).  You can create an additional
     guesser if you want to keep it separate from the tfidf_guesser.  If you do
@@ -112,7 +112,7 @@ evaluation will use the the uploading model directly.
    the GPT and tf-idf guesser).  You can also create a new guesser.
 
 What makes this more fun than the last feature engineering assignment
-is that you have full control over the buzzer now, and you get to
+is that you have full control over the buzzer and guesser now, and you get to
 change what it's producing.  So now you can do more than create
 features *given* the guesses, you can now fix the guesser's problems
 as well!
