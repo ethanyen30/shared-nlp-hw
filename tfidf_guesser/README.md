@@ -37,7 +37,7 @@ Analysis:
 1.  What answers get confused with each other most easily?  What kinds of
     mistakes does this guesser make?
 1.  How does this guesser compare to GPT?  (Remember that the cached guesser from the feature engineering homework came from GPT3, so you could either use your old code or adapt with multiple guessers here!)
-1.  Compute recall as you increase the number of guesses (i.e. `max_n_guesses`).
+1.  Compute recall as you increase the number of guesses (i.e. `num_guesses`).
 
 Accuracy: How well you do on the recall leaderboard.
 
