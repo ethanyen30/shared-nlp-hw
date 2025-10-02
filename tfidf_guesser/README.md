@@ -844,19 +844,11 @@ when they're correct.
 
 Hints
 -
-
+2.  To run the eval script on last homework's GPR guesser and get the guesser metrics, try doing `eval.py --guesser_type=Gpr --limit=100 --questions=../data/qanta.buzztrain.json.gz --evaluate=guesser --GprGuesser_filename=../models/buzztrain_gpr_cache`
 1.  Don't use all of the data, especially at first.  Use the _limit_
     command line argument (as in the above example).  Indeed, you
     might be able to improve accuracy by *excluding* some of the data. 
 1.  That being said, your recall and precision will be zero if your limit is **too** low.  Use a small limit to make sure you don't have any bugs, then increase your limit to be large enough to have the answers you're looking for.
-2.  To run the eval script on last homework's GPR guesser and get the guesser metrics, try doing
-
-
-     eval.py --guesser_type=Gpr --limit=100 \
-             --questions=../data/qanta.buzztrain.json.gz --evaluate=guesser \
-             --GprGuesser_filename=../models/buzztrain_gpr_cache
-
-
 1.  On a related note, don't create a [dense
     matrix](https://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.csr_matrix.todense.html)
     out of tf-idf counts.  By default, the tf-idf libraries will
@@ -866,7 +858,6 @@ Hints
     be around 50 GiB, and that's going to be too big for most laptops
     and certainly for Gradescope).  Any of the operations that you
     need to do you can do with the sparse matrix.
-	
 3.  In case you see an error that your submission timed out on Gradescope, that means that your code needs to be simplified. 
     This is essential for your  code to work on Gradescope, so think of ways
     you can optimize your code.  Another issue if
