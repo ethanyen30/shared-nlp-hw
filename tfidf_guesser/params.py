@@ -100,13 +100,13 @@ def load_questions(flags, secondary=False):
     if flags.question_source == 'expo':
         questions = ExpoQuestions()
         if flags.questions:
-            questions.load_questions(question_filename)
+            questions.load_questions(question_filename, flags.limit)
         else:
             questions.debug()
         
     assert questions is not None, "Did not load %s of type %s" % (flags.questions, flags.question_source)
 
-    if flags.limit > 0:
+    if flags.limit > 0 and flags.question_source != 'expo':
         questions = questions[:flags.limit]
 
     logging.info("Read %i questions" % len(questions))

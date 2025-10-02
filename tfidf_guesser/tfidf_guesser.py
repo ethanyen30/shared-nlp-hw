@@ -123,70 +123,59 @@ class TfidfGuesser(Guesser):
         return guesses
 
     def batch_guess(self, questions:Iterable[str], max_n_guesses:int, block_size:int=1024) -> Iterable[Dict[str, Union[str, float]]]:
-      """
-      The batch_guess function allows you to find the search
-      results for multiple questions at once.  This is more efficient
-      than running the retriever for each question, finding the
-      largest elements, and returning them individually.  
-  
-      To understand why, remember that the similarity operation for an
-      individual query and the corpus is a dot product, but if we do
-      this as a big matrix, we can fit all of the documents at once
-      and then compute the matrix as a parallelizable matrix
-      multiplication.
-  
-      The most complicated part is sorting the resulting similarities,
-      which is a good use of the argpartition function from numpy.
-  
-      Args:
-         questions: the questions we'll produce answers for
-         max_n_guesses: number of guesses to return
-         block_size: split large lists of questions into arrays of this many rows
-      Returns:
-      """
-      
-      all_guesses = []
-  
-      logging.info("Querying matrix of size %i with block size %i" %
-                   (len(questions), block_size))
-  
-      for start in tqdm(range(0, len(questions), block_size)):
-          stop = min(start + block_size, len(questions))  # Handle last block
-          block = questions[start:stop]
-          logging.info("Block %i to %i (%i elements)" % (start, stop, len(block)))
-          
-          # Transform the block of questions to TF-IDF vectors
-          block_tfidf = self.tfidf_vectorizer.transform(block)
-          
-          # Compute cosine similarities for all questions in the block at once
-          cosine_similarities = cosine_similarity(block_tfidf, self.tfidf)
-          
-          # Process each question in the block
-          for question_idx in range(len(block)):
-              cos = cosine_similarities[question_idx]
-              
-              # Get the indices of the top answers
-              # Using argpartition is more efficient than full sort for getting top-k
-              if max_n_guesses < len(cos):
-                  # Get indices of top max_n_guesses elements
-                  top_indices = np.argpartition(cos, -max_n_guesses)[-max_n_guesses:]
-                  # Sort these top indices by their scores
-                  top_indices = top_indices[np.argsort(cos[top_indices])[::-1]]
-              else:
-                  # If requesting more guesses than documents, just sort all
-                  top_indices = np.argsort(cos)[::-1][:max_n_guesses]
-              
-              guesses = []
-              for idx in top_indices:
-                  guesses.append({
-                      "guess": self.answers[idx], 
-                      "confidence": cos[idx], 
-                      "question": self.questions[idx]
-                  })
-              all_guesses.append(guesses)
-  
-      assert len(all_guesses) == len(questions), "Guesses (%i) != questions (%i)" % (len(all_guesses), len(questions))
-      return all_guesses
+        """
+        The batch_guess function allows you to find the search
+        results for multiple questions at once.  This is more efficient
+        than running the retriever for each question, finding the
+        largest elements, and returning them individually.  
+
+        To understand why, remember that the similarity operation for an
+        individual query and the corpus is a dot product, but if we do
+        this as a big matrix, we can fit all of the documents at once
+        and then compute the matrix as a parallelizable matrix
+        multiplication.
+
+        The most complicated part is sorting the resulting similarities,
+        which is a good use of the argpartition function from numpy.
+
+        Args:
+           questions: the questions we'll produce answers for
+           max_n_guesses: number of guesses to return
+           block_size: split large lists of questions into arrays of this many rows
+        Returns:
+        """
+
+        # IMPORTANT NOTE FOR HOMEWORK: you do not need to complete
+        # batch_guess.  If you're having trouble with this, just
+        # delete the function, and the parent class will emulate the
+        # functionality one row at a time.
+        
+        from math import floor
+    
+        all_guesses = []
+
+        logging.info("Querying matrix of size %i with block size %i" %
+                     (len(questions), block_size))
+
+        # The next line of code is bogus, this needs to be fixed
+        # to give you a real answer.
+        top_hits = np.array([list(range(max_n_guesses-1, -1, -1))]*block_size)
+        for start in tqdm(range(0, len(questions), block_size)):
+            stop = start+block_size
+            block = questions[start:stop]
+            logging.info("Block %i to %i (%i elements)" % (start, stop, len(block)))
+            
+            
+
+            for question in range(len(block)):
+                guesses = []
+                for idx in list(top_hits[question]):
+                    score = 0.0
+                    guesses.append({"guess": self.answers[idx], "confidence": score, "question": self.questions[idx]})
+                all_guesses.append(guesses)
+
+        assert len(all_guesses) == len(questions), "Guesses (%i) != questions (%i)" % (len(all_guesses), len(questions))
+        return all_guesses
     
     def load(self):
         """

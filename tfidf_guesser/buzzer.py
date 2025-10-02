@@ -107,7 +107,10 @@ class Buzzer:
         """
         Turn a question's run into features.
 
+        Param:
         guesses -- A dictionary of all the guesses.  If None, will regenerate the guesses.
+
+        
         """
         
         features = {}
@@ -221,7 +224,7 @@ class Buzzer:
             answer = self._answers[run_index]
 
             run_guesses = dict((x, all_guesses[x][run_index]) for x in self._guessers)
-            
+
             for guess, features in self.featurize(question, run, history, run_guesses):
                 print("***", guess, features)
                 self._features.append(features)
@@ -248,7 +251,7 @@ class Buzzer:
             
         return self._features
     
-    def single_predict(self, run):
+    def single_predict(self, question, run, guess_history):
         """
         Make a prediction from a single example ... this us useful when the code
         is run in real-time.  But doesn't use the guess history.
@@ -256,12 +259,10 @@ class Buzzer:
         """
 
         # TODO(jbg): Make this use the run / guess history
-        
-        guess, features = self.featurize(None, run)
 
-        X = self._featurizer.transform([features])
-
-        return self._classifier.predict(X), guess, features
+        for guess, features in self.featurize(question, run, guess_history, guesses=None):
+            X = self._featurizer.transform([features])
+            yield self._classifier.predict(X), guess, features
     
            
     def predict(self, questions, online=False):
