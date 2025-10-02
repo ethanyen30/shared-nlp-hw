@@ -851,9 +851,11 @@ Hints
 1.  That being said, your recall and precision will be zero if your limit is **too** low.  Use a small limit to make sure you don't have any bugs, then increase your limit to be large enough to have the answers you're looking for.
 2.  To run the eval script on last homework's GPR guesser and get the guesser metrics, try doing
 
+
     eval.py --guesser_type=Gpr --limit=100 \
             --questions=../data/qanta.buzztrain.json.gz --evaluate=guesser \
             --GprGuesser_filename=../models/buzztrain_gpr_cache
+
 
 1.  On a related note, don't create a [dense
     matrix](https://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.csr_matrix.todense.html)
