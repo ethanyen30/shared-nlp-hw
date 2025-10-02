@@ -114,6 +114,7 @@ class Buzzer:
         """
         
         features = {}
+        all_guesses = Counter()
         guess = None
 
         # If we didn't cache the guesses, compute them now
