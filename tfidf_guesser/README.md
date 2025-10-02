@@ -76,7 +76,7 @@ tests:
 Your numeric results might not exactly match the similarities here,
 but the ranking should still be consistent.
 
-You might notice the batch guess test failed with the current `batch_guess` function. You could either implement the function (though not required) or use the same function from its parent class.
+You might notice the batch guess test failed with the current `batch_guess` function. This function is not implemented correctly in the code that you have.  If you delete the function, it will use the parent class's implementation (which will work and be slow) or you can implement the function yourself.
 
 What to turn in
 -
@@ -847,8 +847,14 @@ Hints
 
 1.  Don't use all of the data, especially at first.  Use the _limit_
     command line argument (as in the above example).  Indeed, you
-    might be able to improve accuracy by *excluding* some of the data.
-	
+    might be able to improve accuracy by *excluding* some of the data. 
+1.  That being said, your recall and precision will be zero if your limit is **too** low.  Use a small limit to make sure you don't have any bugs, then increase your limit to be large enough to have the answers you're looking for.
+2.  To run the eval script on last homework's GPR guesser and get the guesser metrics, try doing
+
+    eval.py --guesser_type=Gpr --limit=100 \
+            --questions=../data/qanta.buzztrain.json.gz --evaluate=guesser \
+            --GprGuesser_filename=../models/buzztrain_gpr_cache
+
 1.  On a related note, don't create a [dense
     matrix](https://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.csr_matrix.todense.html)
     out of tf-idf counts.  By default, the tf-idf libraries will
