@@ -842,6 +842,8 @@ upload), but this would give you more flexibility.
 Now that we have guessers trained, train a buzzer to predict
 when they're correct.
 
+        python3 buzzer.py --buzzer_type=LogisticBuzzer --TfidfGuesser_filename=models/TfidfGuesser --question_source=gzjson --questions=data/qanta.buzztrain.json.gz --features Length --buzzer_guessers Gpr Tfidf Wiki --features Length Frequency
+
 Hints
 -
 1.  To run the eval script on last homework's GPR guesser and get the guesser metrics, try doing `eval.py --guesser_type=Gpr --limit=100 --questions=../data/qanta.buzztrain.json.gz --evaluate=guesser --GprGuesser_filename=../models/buzztrain_gpr_cache`
