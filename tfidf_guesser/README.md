@@ -679,11 +679,11 @@ guess has been made (higher is better, presumably).
     {"guess: ": 1, "Tfidf_confidence": 0.32610226495081074, "consensus": 0, "Length_char": -0.7666666666666667, "Length_word": -0.72, "Length_ftp": 0, "Length_guess": 0.6931471805599453, "Frequency_guess": 9.103089181229207, "Category_category:Fine Arts": 1, "Category_year": 3.4011973816621555, "Category_subcategory:Fine Arts Visual": 1, "Category_tournament:ACF Winter": 1, "label": false}
 
 This becomes more relevant for using multiple guessers.  If we use
-both guessers with the Gpr guesser as the primary guesser, we can now
+both guessers, we can now
 see how this can help us.  So we generate the features (use a similar
 command line for this to be your buzzer).
 
-    python3 features.py --limit=100  --question_source=gzjson --TfidfGuesser_filename=models/TfidfGuesser  --questions=../data/qanta.buzztrain.json.gz --buzzer_guessers Tfidf Gpr --primary_guesser Gpr --json_guess_output=temp.out
+    python3 features.py --limit=100  --question_source=gzjson --TfidfGuesser_filename=models/TfidfGuesser  --questions=../data/qanta.buzztrain.json.gz --buzzer_guessers Tfidf Gpr --json_guess_output=temp.out
 
 Now we can see for this question: 
 
@@ -839,7 +839,7 @@ upload), but this would give you more flexibility.
     --logging_file=guesser.log \
     --limit=10
 
-Now that we have guessers trained, let's train a buzzer to predict
+Now that we have guessers trained, train a buzzer to predict
 when they're correct.
 
 Hints
