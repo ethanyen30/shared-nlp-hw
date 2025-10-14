@@ -38,9 +38,8 @@ dataset(https://pytorch.org/docs/stable/data.html).
 
 The data loader includes two functions, `batchify()` and `vectorize()`. For
 each example, we need to vectorize the question text into a vector using the 
-vocabulary. In this assignment, you need to write the `vectorize()` function
-yourself. We provide the `batchify()` function to split the dataset into
-mini-batches.
+vocabulary.  You don't need to implement anything here, but to implement the
+rest of your code, you need to understand what they do.
 
 What's the Loss Function?
 ----------------------
@@ -51,8 +50,14 @@ our goal?  We want that representation to be closer to a question in
 our train set with the correct label (answer / page) than questions
 with different answers.
 
-So if the wrong answer is closer, we push it away and pull the correct
-answer closer.  
+One way of doing that is by trying to predict what the final answer is 
+by taking the prediction over answers and backpropagating into the 
+answer representations.  This is the loss function required for this 
+homework (*cross entropy*).
+
+Another way of doing that is specifying the loss on the question representations
+directly.  So if the wrong answer is closer, we push it away and pull the correct
+answer closer.  You can implement this for extra credit.
 
 In the code, the positive and negative examples are chose in the
 ``getitem`` function of the `QuestionData` class, but then turned into
@@ -60,6 +65,42 @@ matrices in the `batchify` function.  Walk through that code so you
 understand everything.  Check the Pytorch documentation:
 
 https://pytorch.org/docs/stable/generated/torch.nn.TripletMarginLoss.html 
+
+Extreme Toy Data
+----------------
+
+
+The toy data are designed (and the unit tests use this) so that the words when
+are on +1 / -1 on the y or x axis perfectly divide the data.
+
+    def testEmbedding(self):
+        for word, embedding in [["unk",      [+0, +0]],
+                                ["capital",  [+0, -1]],
+                                ["currency", [+0, +1]],
+                                ["england",  [+1, +0]],
+                                ["russia",   [-1, +0]]]:
+
+This is because there are only four answers in the data, and the four words
+combine to signal what the answer is.  After averaging the data, the four
+quadrants represent the answer space.
+
+    def testRealAverage(self):       
+        reference = [([+0.5, +0.5], "england currency"),
+                     ([-0.5, +0.5], "russia currency"),                     
+                     ([-0.5, -0.5], "russia capital"),
+                     ([+0.5, -0.5], "england capital")]
+
+The provided network for testing for the final layer just stretches things out a bit.
+
+    def testNetwork(self):
+        embeddings = self.dan.dan_model.embeddings(self.documents)
+        average = self.dan.dan_model.average(embeddings, self.length)
+        representation = self.dan.dan_model.network(average)
+
+        reference = [([+1.0, +1.0], "currency england"),
+                     ([-1.0, +1.0], "currency russia"),                     
+                     ([-1.0, -1.0], "capital russia"),
+                     ([+1.0, -1.0], "capital england")]
 
 Guide
 -----
@@ -130,7 +171,41 @@ After you've done that, the system should perfectly answer these questions
     - [0, 0]
     + [3, 1]
 
-Once you have things working, you'll need to train a network.
+Once you have the forward pass working with known weights, you'll need to train a network.
+
+ The Actual Test Data
+-------------------
+
+For the training, the problem looks much the same, but you'll start from
+random initialization and there will be lots of words that do not contribute
+to finding the right answer.
+
+The data are defined in guesser.py:
+
+             "mini-train": [{"page": "Rouble", "text": "What is this currency of russia"},
+                            {"page": "Pound", "text": "What is this currency of england"},
+                            {"page": "Moscow", "text": "What is this capital of russia"},
+                            {"page": "London", "text": "What is this capital of england"},
+                            {"page": "Rouble", "text": "What 's russia 's currency"},
+                            {"page": "Pound", "text": "What 's england 's currency"},
+                            {"page": "Moscow", "text": "What 's russia 's capital"},
+                            {"page": "London", "text": "What 's england 's capital"}],
+             "mini-dev": [{"page": "Rouble", "text": "What currency is used in russia"},
+                          {"page": "Pound", "text": "What currency is used in england"},
+                          {"page": "Moscow", "text": "What is the capital and largest city of russia"},
+                          {"page": "London", "text": "What is the capital and largest city of england"},
+                          {"page": "Rouble", "text": "What 's the currency in russia"},
+                          {"page": "Pound", "text": "What 's the currency in england"},
+                          {"page": "Moscow", "text": "What 's the capital of russia"},
+                          {"page": "London", "text": "What 's the capital of england"}],
+
+The learned representations won't be as clean, but you should be able to get
+perfect accuracy on this dataset.
+
+Scaling Up
+-----------
+
+We don't expect you to scale up to "real" data for this homework, but you can do so (particularly if you have a GPU).  For that, 
 
     python3 guesser.py --guesser_type=DanGuesser --question_source=gzjson --questions=../data/qanta.guesstrain.json.gz --secondary_questions=../data/qanta.guessdev.json.gz --limit=10000 --no_cuda
 
@@ -201,24 +276,19 @@ Then check to see how well the code does.
 Because many of you don't have GPUs, our goal is not to have you train a
 super-converged model.  We want to see models with a non-zero recall and
 precision guess over at least hundreds of possible answers.  It doesn't have to be
-particularly good (but you can get extra credit if you invest the time).
+particularly good (but you can get more extra credit if you invest the time).
 
 
 What you have to do
 ----------------
 
-**Coding**: (15 points)
+**Coding**: (20 points)
 1. Understand the structure of the code, particularly the
    `QuestionData` class.
 2. Write the data `vectorize()` funtion.
 3. Write DAN model initialization. 
 3. Write the `average()` function.
 4. Write model `forward()` function.
-5. Write the model training/testing function `evaluate()`. We don't have unit tests for this part, but it's necessary to get it correct to achieve reasonable performance.
-
-**Analysis**: (5 points)
-1. Report the accuracy on the dev set. 
-2. Look at the development set and give some examples and explain the possible reasons why these examples are predicted incorrectly (remember that this is what eval.py does for you). 
 
 
 Pytorch install
@@ -238,7 +308,11 @@ https://pytorch.org/get-started/locally/.
 Extra Credit
 ----------------
 
-There are lots of things you could do for extra credit, but here are
+The preferred extra credit for this homework is using a ranking-based loss function.
+Most of the code for finding positive and negative examples is already provided, but
+you may need (or want) to tweak the code so that it gives you what you want.
+
+There are lots of other things you could do for extra credit, but here are
 some ideas:
 
 * Initialize the word representations with
@@ -274,6 +348,11 @@ TODO: Update for Gradescope
 2. Submit your `analysis.pdf` file. (Please make sure that this is **PDF** file!      No more than one page, include your name at the top of the pdf.)
 3. Upload your model parameters.
 4. (Optional) Upload the wordvectors you use.
+
+Good Enough
+------------
+
+To get full points on this assignment, you'll need to have an implementation that can get perfect on the `mini-dev` dataset when trained on the `mini-train` dataset.  
 
 FAQ
 ----
