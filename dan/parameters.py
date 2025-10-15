@@ -147,7 +147,7 @@ def instantiate_guesser(guesser_type, flags, load):
         guesser = TfidfGuesser(flags.TfidfGuesser_filename)  
         if load:                                             
             guesser.load()
-    if guesser_type == "Dan":                                
+    if guesser_type == "Dan" or guesser_type == "DanGuesser":                                
         from dan_guesser import DanGuesser
         
         dan_params = DanParameters()

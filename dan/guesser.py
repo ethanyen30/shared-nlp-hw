@@ -8,7 +8,7 @@ import re
 import json
 import pickle
 import logging
-
+from nltk.tokenize import sent_tokenize
 from parameters import Parameters
 
 from typing import List, Dict, Iterable, Optional, Tuple, NamedTuple

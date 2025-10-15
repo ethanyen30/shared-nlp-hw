@@ -71,14 +71,6 @@ class DanPlotter:
         for ii in self.temp_gradients:
             self.gradients[epoch][ii] = torch.mean(torch.stack(self.temp_gradients[ii]), 0)
 
-
-
-
-
-
-
-
-            
             
 
     def gradient_vector(self, epoch, name, initial_value, indices, max_gradient=5):
@@ -263,8 +255,9 @@ class DanModel(nn.Module):
         # For test cases, the network we consider is - linear1 -> ReLU() -> Dropout() -> linear2
 
         # TODOs: Implement the network structure        
-        self.network = None
+        # self.network = None
         #### Your code here
+        self.network = None
 
         # To make this work on CUDA, you need to move it to the appropriate
         # device
@@ -284,12 +277,7 @@ class DanModel(nn.Module):
                 self.linear2.weight.data.copy_(torch.eye(n_hidden_units))
                 self.linear1.bias.data.copy_(torch.zeros(n_hidden_units))
                 self.linear2.bias.data.copy_(torch.zeros(n_hidden_units))                
-            
-
-
-
                          
-
                          
     def average(self, text_embeddings: Tensor, text_len: Tensor):
         """
@@ -302,11 +290,9 @@ class DanModel(nn.Module):
         # TODOs: Implement the averaging function for the embeddings. Sum along
         # the sequence dimension and divide by length
         
-
-        # You'll want to finish this function.  You don't *have* to use it in
-        # your forward function, but it's a good way to make sure the
-        # dimensions match and to use the unit test to check your work.
-        # In other words, we encourage you to use it.
+        for i in range(text_embeddings.size()[0]):
+            # Sum embeddings along the sequence dimension and divide by length
+            average[i] = None
 
         return average
 
@@ -321,11 +307,11 @@ class DanModel(nn.Module):
 
         # TODOs: Implement the forward function. 
         
-        representation = torch.FloatTensor([0.0] * self.n_hidden_units)
-        #### Your code here
-        # Complete the forward funtion.  First look up the word embeddings.
-          # Then average them
-          # Before feeding them through the network
+        embeddings = None
+
+        averaged = None
+
+        representation = None
 
         return representation
 
@@ -384,19 +370,13 @@ class QuestionData(Dataset):
         self.answer_indices.index(self.answers[item_id])
     
     def get_batch_nearest(self, query_representation: np.ndarray, n_nearest: int,
-                          lookup_answer=True, lookup_answer_id=False):
-        """
-        Given the current example representations, find the closest one
-
-        query_representation -- numpy Vector[Nd, Nh] the representation of this example
-        n_nearest -- how many closest vectors to return
-        """
+                      lookup_answer=True, lookup_answer_id=False):
         scores, closest = self.lookup.search(query_representation, k=n_nearest)
 
         if lookup_answer:
-          closest = [self.answers[x[0]] for x in closest]
+            closest = [self.answers[row[0]] for row in closest]  # Fixed: row[0] is the nearest index
         if lookup_answer_id:
-          closest = [self.answer_indices.index(x) for x in closest]
+            closest = [self.answer_indices.index(self.answers[row[0]]) for row in closest]
 
         return closest
     
@@ -509,41 +489,57 @@ class QuestionData(Dataset):
         from nltk import FreqDist
         from random import sample
 
+        # Debug: Check what we're getting
+        logging.info(f"set_data called with {len(questions)} questions")
+        if questions:
+            logging.info(f"First question keys: {questions[0].keys()}")
+            logging.info(f"Answer field '{answer_field}' value: {questions[0].get(answer_field, 'MISSING')}")
+
         # TODO(jbg): Should answers be a Vocab object?
-        answer_counts = Counter(x[answer_field] for x in questions if x[answer_field])
+        answer_counts = Counter(x[answer_field] for x in questions if answer_field in x and x[answer_field])
+        
+        logging.info(f"Found {len(answer_counts)} unique answers")
+        logging.info(f"Top 10 answers: {answer_counts.most_common(10)}")
 
         if fix_answers is None:
             valid_answers = list((x, count) for x, count in answer_counts.most_common(self.answer_max_count)
-                                if count > self.answer_min_freq)
+                                if count >= self.answer_min_freq)
             self.answer_indices = [x[0] for x in sorted(valid_answers, key=lambda x: (-x[1], x[0]))]
         else:
             self.answer_indices = fix_answers
 
-        valid_answers = set(self.answer_indices)
-        self.questions = [x["text"] for x in questions if x[answer_field] in valid_answers]
-        self.answers = [x[answer_field] for x in questions if x[answer_field] in valid_answers]
-
-        # Extra credit opportunity: Use tf-idf to find hard negatives rather
-        # than random ones; this is not needed for cross-entropy loss
-        self.positive = []
-        self.negative = []
-        for index, question in enumerate(tqdm(self.questions)):
-            answer = self.answers[index]
-            positive_indices = self.comparison_indices(index, answer, self.answers, self.questions, lambda x, y: x==y)
-            negative_indices = self.comparison_indices(index, answer, self.answers, self.questions, lambda x, y: x!=y)
-
-            positive = [self.questions[x] for x in positive_indices]
-            negative = [self.questions[x] for x in negative_indices]
-
-            self.negative.append(negative)
-            self.positive.append(positive)
-            
-        assert len(self.positive) == len(self.questions)
-        assert len(self.negative) == len(self.answers)
-        assert len(self.answers) == len(self.questions)
-
-        logging.info("Loaded %i questions with %i unique answers" % (len(self.questions), len(valid_answers)))
+        logging.info(f"Selected {len(self.answer_indices)} valid answers")
         
+        valid_answers = set(self.answer_indices)
+        self.questions = [x["text"] for x in questions if answer_field in x and x[answer_field] in valid_answers]
+        self.answers = [x[answer_field] for x in questions if answer_field in x and x[answer_field] in valid_answers]
+
+        # Initialize positive and negative example lists
+        if self.use_contrastive_examples:
+            self.positive = []
+            self.negative = []
+            
+            # For each question, find positive and negative examples
+            for idx in range(len(self.questions)):
+                target_answer = self.answers[idx]
+                
+                # Find positive examples (same answer, different question)
+                pos_indices = self.comparison_indices(idx, target_answer, self.answers, 
+                                                    self.questions, lambda x, y: x == y)
+                self.positive.append([self.questions[i] for i in pos_indices])
+                
+                # Find negative examples (different answer)
+                neg_indices = self.comparison_indices(idx, target_answer, self.answers,
+                                                    self.questions, lambda x, y: x != y)
+                self.negative.append([self.questions[i] for i in neg_indices])
+        else:
+            # For CrossEntropyLoss, we don't need positive/negative examples
+            self.positive = None
+            self.negative = None
+    
+    '''
+    TODOs: Implement the vectorize function.
+    '''
     @staticmethod
     def vectorize(ex : str, vocab: Vocab, tokenizer: Callable) -> torch.LongTensor:
         """
@@ -558,7 +554,7 @@ class QuestionData(Dataset):
 
         assert vocab is not None, "Vocab not initialized"
         
-        vec_text = torch.LongTensor([[vocab[x] for x in tokenizer(ex)]])
+        vec_text = None
 
         return vec_text
 
@@ -783,6 +779,21 @@ class DanGuesser(Guesser):
         if self.plotter:
             self.plotter.save_plot()
 
+    def train(self, training_data, answer_field="page", split_by_sentence=False, 
+            secondary_data=None, min_length=0, max_length=10000000):
+        """
+        Wrapper for train_dan to match the base Guesser API.
+        This is called when using guesser.py instead of dan_guesser.py directly.
+        """
+        # Use secondary_data if provided, otherwise use empty list
+        eval_data = secondary_data if secondary_data else []
+        
+        # If eval_data is empty, we need to provide at least some data
+        if not eval_data:
+            eval_data = training_data[:min(10, len(training_data))]
+        
+        return self.train_dan(training_data, eval_data)
+
     def __call__(self, question: str, n_guesses: int=1):
         model = self.dan_model
 
@@ -814,39 +825,87 @@ class DanGuesser(Guesser):
         """
         
         # Guesser.save(self)
-
-        torch.save(self.dan_model, "%s.torch.pkl" % self.filename)
+        
+        if hasattr(self, 'dan_model') and self.dan_model is not None:
+            torch.save(self.dan_model, "%s.torch.pkl" % self.filename)
+        else:
+            logging.warning("No model to save - was the model trained?")
 
     def load(self):
         # Guesser.load(self)
         
-        self.dan_model = torch.load("%s.torch.pkl" % self.filename)
+        import os
+        model_path = "%s.torch.pkl" % self.filename
+        if os.path.exists(model_path):
+            self.dan_model = torch.load(model_path)
+        else:
+            logging.warning("Model file %s not found" % model_path)
 
     def batch_step(self, optimizer, model, example, example_length,
-                   positive, positive_length, negative, negative_length,
-                   answers, answer_lookup, grad_clip):
+               positive, positive_length, negative, negative_length,
+               answers, answer_lookup, grad_clip):
         """
         This is almost a static function (and used to be) except for the loss function.
-        
         """
-        loss = None
         criterion = self.dan_model.criterion
 
-        # Prepare the optimizer to ignore gradients and compute predictions
-
+        # Zero the gradients
+        optimizer.zero_grad()
 
         # Compute the loss
         if type(criterion).__name__ == "MarginRankingLoss":
-              loss = None
+            # Get representations for anchor, positive, and negative examples
+            anchor_rep = model.forward(example, example_length)
+            positive_rep = model.forward(positive, positive_length)
+            negative_rep = model.forward(negative, negative_length)
+            
+            # Compute distances
+            pos_dist = torch.pairwise_distance(anchor_rep, positive_rep)
+            neg_dist = torch.pairwise_distance(anchor_rep, negative_rep)
+            
+            # MarginRankingLoss expects target to be 1 (positive should be closer)
+            target = torch.ones(pos_dist.size()).to(model.embeddings.weight.device)
+            
+            # We want positive to be closer than negative, so:
+            # loss = max(0, margin + pos_dist - neg_dist)
+            loss = criterion(neg_dist, pos_dist, target)
+            
         elif type(criterion).__name__ == "CrossEntropyLoss":
-              loss = None
-              
+            # Get logits from the model
+            logits = model.forward(example, example_length)
+            
+            # Convert answer strings to indices
+            label_indices = torch.LongTensor([answer_lookup.index(ans) for ans in answers])
+            label_indices = label_indices.to(model.embeddings.weight.device)
+            
+            # Compute cross entropy loss
+            loss = criterion(logits, label_indices)
+        
+        # Backward pass
+        loss.backward()
+        
+        # Clip gradients if specified
+        if grad_clip > 0:
+            clip_grad_norm_(model.parameters(), grad_clip)
+        
+        # Update weights
+        optimizer.step()
+        
+        # Update representations for ranking loss (after optimizer step)
+        if type(criterion).__name__ == "MarginRankingLoss":
+            # Need to update the stored representations in the training data
+            # This is done in run_epoch with build_representation
+            pass
+        
         return loss
 
     ###You don't need to change this funtion
     @staticmethod
     def batchify_with_contrastive(batch):
-        q_batch = batchify_examples_only(batch)
+        q_batch = DanGuesser.batchify_examples_only(batch)
+
+        num_examples = len(batch)
+        max_length = max(x.longest_example_length() for x in batch)
 
         pos_lengths = torch.LongTensor(len(batch)).zero_()
         neg_lengths = torch.LongTensor(len(batch)).zero_()
@@ -855,13 +914,19 @@ class DanGuesser(Guesser):
         negative_matrix = torch.LongTensor(num_examples, max_length).zero_()
 
         for idx, ex in enumerate(batch):
-                pos_lengths[idx] = len(ex.positive)
-                neg_lengths[idx] = len(ex.negative)
+                pos = ex.positive[0] if ex.positive is not None else []
+                neg = ex.negative[0] if ex.negative is not None else []
+                
+                pos_lengths[idx] = len(pos)
+                neg_lengths[idx] = len(neg)
 
-                positive_matrix[idx, :len(ex.positive)].copy_(torch.LongTensor(pos))
-                negative_matrix[idx, :len(ex.negative)].copy_(torch.LongTensor(neg))
+                if len(pos) > 0:
+                    positive_matrix[idx, :len(pos)].copy_(torch.LongTensor(pos))
+                if len(neg) > 0:
+                    negative_matrix[idx, :len(neg)].copy_(torch.LongTensor(neg))
+                    
         for new_key, new_value in [('pos_text', positive_matrix), ('pos_len', pos_lengths),
-                                   ('neg_text', negative_matrix), ('neg_len', neg_lengths)]:
+                                ('neg_text', negative_matrix), ('neg_len', neg_lengths)]:
             q_batch[new_key] = new_value
 
         return q_batch
@@ -919,13 +984,33 @@ def number_errors(question_text: torch.Tensor, question_len: torch.Tensor,
 
     """
     # Call the model to get the representation
-    # You'll need to update the code here
-    #### Your code here
-    error = -1
+    error = 0
+    
     if type(model.criterion).__name__ == "MarginRankingLoss":
-        None
+        # Get representations for the questions
+        representations = model.forward(question_text, question_len).detach().numpy()
+        
+        # For each question, find the nearest answer
+        predictions = train_data.get_batch_nearest(representations, 1, lookup_answer=True, lookup_answer_id=False)
+        
+        # Count errors
+        for pred, label in zip(predictions, labels):
+            if pred != label:
+                error += 1
+                
     elif type(model.criterion).__name__ == "CrossEntropyLoss":
-        error = len(labels)        
+        # Get logits from the model
+        logits = model.forward(question_text, question_len)
+        
+        # Get predicted class indices
+        _, predicted_indices = torch.max(logits, 1)
+        
+        # Convert labels (answer strings) to indices
+        label_indices = [train_data.answer_indices.index(label) for label in labels]
+        label_tensor = torch.LongTensor(label_indices)
+        
+        # Count errors
+        error = (predicted_indices != label_tensor).sum().item()
 
     return error
     
@@ -985,5 +1070,6 @@ if __name__ == "__main__":
     logging.info("Loaded %i dev examples" % len(dev_exs))
     logging.info("Example: %s" % str(train_exs[0]))
 
-    guesser = instantiate_guesser("Dan", flags, guesser_params, False)
+    # guesser = instantiate_guesser("Dan", flags, guesser_params, False)
+    guesser = instantiate_guesser("Dan", flags, guesser_params)
     guesser.train_dan(train_exs, dev_exs)

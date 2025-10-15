@@ -26,7 +26,9 @@ def create_model(criterion):
         parameters = DanParameters(unit_test_params)
         parameters.set_defaults()
         dan = DanGuesser(parameters)
-        dan.initialize_model()
+        # dan.initialize_model()
+        dan.initialize_model(num_classes=4, vocab_size=5)
+
 
         with torch.no_grad():
           if criterion == "MarginRankingLoss":
@@ -95,6 +97,9 @@ class DanTest(unittest.TestCase):
 
         self.ce_dan, ce_parameters = create_model("CrossEntropyLoss")
 
+        self.ce_dan, ce_parameters = create_model("CrossEntropyLoss")
+        self.mr_dan, mr_parameters = create_model("MarginRankingLoss")
+
         self.censored_data, self.censored_lookup = initialize_data(mr_parameters,
                                                                    self.mr_dan.dan_model,
                                                                    kTOY_DATA["tiny"], 4)
@@ -133,8 +138,10 @@ class DanTest(unittest.TestCase):
         """
         
         sampler = torch.utils.data.sampler.SequentialSampler(self.censored_data)
+        # loader = DataLoader(self.full_data, batch_size=4, sampler=sampler,
+        #                     ccollate_fn=DanGuesser.batchify_with_contrastive)
         loader = DataLoader(self.full_data, batch_size=4, sampler=sampler,
-                            collate_fn=DanGuesser.batchify)
+                    collate_fn=DanGuesser.batchify_with_contrastive)
 
         for idx, batch in enumerate(loader):
            # Because we've repeated the same data with four elements
