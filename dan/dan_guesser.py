@@ -71,6 +71,14 @@ class DanPlotter:
         for ii in self.temp_gradients:
             self.gradients[epoch][ii] = torch.mean(torch.stack(self.temp_gradients[ii]), 0)
 
+
+
+
+
+
+
+
+            
             
 
     def gradient_vector(self, epoch, name, initial_value, indices, max_gradient=5):
@@ -292,7 +300,7 @@ class DanModel(nn.Module):
         
         for i in range(text_embeddings.size()[0]):
             # Sum embeddings along the sequence dimension and divide by length
-            average[i] = None
+            pass
 
         return average
 
@@ -307,10 +315,9 @@ class DanModel(nn.Module):
 
         # TODOs: Implement the forward function. 
         
+    
         embeddings = None
-
         averaged = None
-
         representation = None
 
         return representation
@@ -536,10 +543,7 @@ class QuestionData(Dataset):
             # For CrossEntropyLoss, we don't need positive/negative examples
             self.positive = None
             self.negative = None
-    
-    '''
-    TODOs: Implement the vectorize function.
-    '''
+        
     @staticmethod
     def vectorize(ex : str, vocab: Vocab, tokenizer: Callable) -> torch.LongTensor:
         """
@@ -795,51 +799,140 @@ class DanGuesser(Guesser):
         return self.train_dan(training_data, eval_data)
 
     def __call__(self, question: str, n_guesses: int=1):
+        if not hasattr(self, 'dan_model'):
+            raise RuntimeError("Model not loaded. Call load() first or train the model.")
+        
         model = self.dan_model
-
-        # TODO (jbg): Does this need to be instantiated each time?
+        model.eval()
+        
+        # Create a temporary QuestionData object for this single question
         test_question = QuestionData(self.params)
-        test_question.set_data([question])
-        test_question_loader = DataLoader(self.test_question)
-
-        question_text = test_question_loader[0]['question_text'].to(self.params.dan_guesser_device)
-        question_len = test_question_loader[0]['question_len']
-
-        representation = model.forward(question_text, question_len)
+        test_question.vocab = self.training_data.vocab
+        test_question.answer_indices = self.training_data.answer_indices
+        
+        # Vectorize the question
+        q_vec = test_question.vectorize(question, self.training_data.vocab, test_question.tokenizer)
+        question_text = q_vec.to(self.params.dan_guesser_device)
+        question_len = torch.IntTensor([len(q_vec[0])])
+        
+        # Get representation
+        with torch.no_grad():
+            representation = model.forward(question_text, question_len)
+        
         logging.debug("Guess logits (query=%s len=%i): %s" % (question, len(representation), str(representation)))
-        raw_guesses = self.training_data.get_nearest(representation, n_guesses)
-
+        
+        # Find nearest neighbors
+        if self.training_data.use_contrastive_examples:
+            raw_guesses = self.training_data.get_nearest(representation[0].detach().numpy(), n_guesses)
+        else:
+            # For CrossEntropyLoss, use argmax
+            # Make sure we don't ask for more guesses than we have classes
+            num_classes = representation.shape[1]
+            k = min(n_guesses, num_classes)
+            _, predicted_indices = torch.topk(representation, k, dim=1)
+            raw_guesses = predicted_indices[0].tolist()
+        
         guesses = []
-        for guess_index in range(n_guesses):
-            guess = self.training_data.answers[raw_guesses[guess_index]]
-
+        for guess_index in range(len(raw_guesses)):
+            if self.training_data.use_contrastive_examples:
+                guess = self.training_data.answers[raw_guesses[guess_index]]
+            else:
+                guess = self.training_data.answer_indices[raw_guesses[guess_index]]
+            
             if guess == kUNK:
                 guess = ""
-            # TODO: add guess "confidence"
             guesses.append({"guess": guess})
+        
         return guesses
 
     def save(self):
         """
         Save the DanGuesser to a file
         """
-        
-        # Guesser.save(self)
-        
         if hasattr(self, 'dan_model') and self.dan_model is not None:
-            torch.save(self.dan_model, "%s.torch.pkl" % self.filename)
+            # Save the model state dict instead of the entire model
+            torch.save({
+                'model_state_dict': self.dan_model.state_dict(),
+                'vocab': self.training_data.vocab,
+                'answer_indices': self.training_data.answer_indices,
+                'dimension': self.training_data.dimension,
+                'criterion': type(self.dan_model.criterion).__name__,
+                'vocab_size': self.dan_model.vocab_size,
+                'emb_dim': self.dan_model.emb_dim,
+                'n_hidden_units': self.dan_model.n_hidden_units,
+                'nn_dropout': self.dan_model.nn_dropout,
+                'num_answers': self.dan_model.num_answers
+            }, "%s.torch.pkl" % self.filename)
+            
+            # Also save the training data representations if using MarginRankingLoss
+            if self.training_data.use_contrastive_examples:
+                torch.save({
+                    'representations': self.training_data.representations,
+                    'questions': self.training_data.questions,
+                    'answers': self.training_data.answers
+                }, "%s.data.pkl" % self.filename)
+            
+            logging.info(f"Model saved to {self.filename}.torch.pkl")
         else:
             logging.warning("No model to save - was the model trained?")
 
     def load(self):
-        # Guesser.load(self)
-        
+        """
+        Load the DanGuesser from a file
+        """
         import os
         model_path = "%s.torch.pkl" % self.filename
-        if os.path.exists(model_path):
-            self.dan_model = torch.load(model_path)
+        
+        if not os.path.exists(model_path):
+            raise FileNotFoundError(f"Model file {model_path} not found. Please train the model first.")
+        
+        # Determine the correct device - force CPU if CUDA not available
+        if torch.cuda.is_available() and self.params.dan_guesser_device == 'cuda':
+            device = torch.device('cuda')
         else:
-            logging.warning("Model file %s not found" % model_path)
+            device = torch.device('cpu')
+            # Update params to reflect actual device being used
+            self.params.dan_guesser_device = 'cpu'
+        
+        logging.info(f"Loading model to device: {device}")
+        
+        # Load the checkpoint with proper device mapping - USE device OBJECT not string
+        checkpoint = torch.load(model_path, map_location=device)
+        
+        # Reconstruct the model
+        criterion = getattr(nn, checkpoint['criterion'])()
+        self.dan_model = DanModel(
+            model_filename=self.params.dan_guesser_filename,
+            device=str(device),  # Convert device to string for DanModel
+            criterion=criterion,
+            vocab_size=checkpoint['vocab_size'],
+            n_answers=checkpoint['num_answers'],
+            emb_dim=checkpoint['emb_dim'],
+            n_hidden_units=checkpoint['n_hidden_units'],
+            nn_dropout=checkpoint['nn_dropout']
+        )
+        
+        # Load the model weights
+        self.dan_model.load_state_dict(checkpoint['model_state_dict'])
+        self.dan_model = self.dan_model.to(device)  # Move model to correct device
+        self.dan_model.eval()
+        
+        # Reconstruct training data for lookups
+        self.training_data = QuestionData(self.params)
+        self.training_data.vocab = checkpoint['vocab']
+        self.training_data.answer_indices = checkpoint['answer_indices']
+        self.training_data.dimension = checkpoint['dimension']
+        
+        # Load representations if available (for MarginRankingLoss)
+        data_path = "%s.data.pkl" % self.filename
+        if os.path.exists(data_path):
+            data_checkpoint = torch.load(data_path, map_location=device)
+            self.training_data.representations = data_checkpoint['representations']
+            self.training_data.questions = data_checkpoint['questions']
+            self.training_data.answers = data_checkpoint['answers']
+            self.training_data.refresh_index()
+        
+        logging.info(f"Model loaded from {model_path} on device {device}")
 
     def batch_step(self, optimizer, model, example, example_length,
                positive, positive_length, negative, negative_length,
@@ -1057,7 +1150,12 @@ if __name__ == "__main__":
     flags = parser.parse_args()
     #### check if using gpu is available
     cuda = not flags.no_cuda and torch.cuda.is_available()
-    flags.dan_guesser_device = "cuda" if cuda else "cpu"
+    if flags.no_cuda:
+        flags.dan_guesser_device = 'cpu'
+    else:
+        flags.dan_guesser_device = 'cuda' if torch.cuda.is_available() else 'cpu'
+
+    setup_logging(flags)
     logging.info("Device= %s", str(torch.device(flags.dan_guesser_device)))
     guesser_params["dan"].load_command_line_params(flags)
     setup_logging(flags)
@@ -1070,6 +1168,12 @@ if __name__ == "__main__":
     logging.info("Loaded %i dev examples" % len(dev_exs))
     logging.info("Example: %s" % str(train_exs[0]))
 
-    # guesser = instantiate_guesser("Dan", flags, guesser_params, False)
-    guesser = instantiate_guesser("Dan", flags, guesser_params)
+    # Create guesser WITHOUT loading (for training)
+    logging.info("Initializing guesser of type Dan")
+    guesser = DanGuesser(guesser_params["dan"])
+    
+    # Train the model
     guesser.train_dan(train_exs, dev_exs)
+    
+    # Save the trained model
+    guesser.save()

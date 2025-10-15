@@ -205,7 +205,7 @@ if __name__ == "__main__":
     add_general_params(parser)
     guesser_params = add_guesser_params(parser)
     question_params = add_question_params(parser)
-    buzzer_params = add_buzzer_params(parser)
+    # buzzer_params = add_buzzer_params(parser)
 
     parser.add_argument('--evaluate', default="buzzer", type=str)
     parser.add_argument('--cutoff', default=-1, type=int)    
@@ -213,14 +213,16 @@ if __name__ == "__main__":
     flags = parser.parse_args()
     setup_logging(flags)
 
+    print("Evaluation: %s" % flags )
+
     questions = load_questions(flags)
     guesser = load_guesser(flags, guesser_params, load=flags.load)    
-    if flags.evaluate == "buzzer":
-        buzzer = load_buzzer(flags, buzzer_params, load=True)
-        outcomes, examples, unseen = eval_buzzer(buzzer, questions,
-                                                 history_length=flags.buzzer_history_length,
-                                                 history_depth=flags.buzzer_history_depth)
-    elif flags.evaluate == "guesser":
+    # if flags.evaluate == "buzzer":
+    #     buzzer = load_buzzer(flags, buzzer_params, load=True)
+    #     outcomes, examples, unseen = eval_buzzer(buzzer, questions,
+    #                                              history_length=flags.buzzer_history_length,
+    #                                              history_depth=flags.buzzer_history_depth)
+    if flags.evaluate == "guesser":
         if flags.cutoff >= 0:
             outcomes, examples = eval_retrieval(guesser, questions, flags.num_guesses, flags.cutoff)
         else:
