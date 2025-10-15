@@ -212,12 +212,12 @@ Scaling Up
 
 We don't expect you to scale up to "real" data for this homework, but you can do so (particularly if you have a GPU).  For that, 
 
-    python3 guesser.py --guesser_type=DanGuesser --question_source=gzjson --questions=../data/qanta.guesstrain.json.gz --secondary_questions=../data/qanta.guessdev.json.gz --limit=10000 --no_cuda
+    python dan_guesser.py   --dan_guesser_hidden_units 50   --dan_guesser_vocab_size 30   --dan_guesser_max_classes 4   --dan_guesser_num_workers 0   --dan_guesser_num_epochs 100   --dan_guesser_embed_dim 50   --dan_guesser_nn_dropout 0.3   --dan_guesser_batch_size 4   --dan_guesser_criterion CrossEntropyLoss   --dan_guesser_device cuda --question_source=gzjson --questions=../data/qanta.guesstrain.json.gz --secondary_questions=../data/qanta.guessdev.json.gz --limit=10000
 
 
 Then check to see how well the code does.
 
-    > python3 eval.py --guesser_type=DanGuesser --question_source=gzjson --questions=../data/qanta.guessdev.json.gz --evaluate guesser --limit=250
+    > python eval.py --guesser_type=DanGuesser --question_source=gzjson --questions=../data/qanta.guessdev.json.gz --evaluate guesser --limit=250
     INFO:root:Generating guesses for 250 new question
 
     miss 0.69
