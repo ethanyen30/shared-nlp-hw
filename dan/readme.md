@@ -108,7 +108,7 @@ Guide
 First, you need to check to make sure that you can construct an example from
 text.  This is called "vectorizing" in the Pytorch pipeline.
 
-    > python3 dan_test.py 
+    > python dan_test.py 
     Traceback (most recent call last):
     ======================================================================
     FAIL: test_train_preprocessing (__main__.DanTest)
