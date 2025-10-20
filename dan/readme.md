@@ -204,7 +204,7 @@ perfect accuracy on this dataset.
 
 
 ```
-python dan_guesser.py --question_source=gzjson --questions=./mini-train.json.gz --secondary_questions=./mini-dev.json.gz --limit=1000 --no_cuda --dan_guesser_max_classes=200 --dan_guesser_ans_min_freq=1
+python dan_guesser.py --question_source=gzjson --questions=./mini-train.json.gz --secondary_questions=./mini-dev.json.gz --limit=1000 --no_cuda --dan_guesser_max_classes=200 --dan_guesser_ans_min_freq=1 --dan_guesser_filename dan_main
 ```
 
 Scaling Up
