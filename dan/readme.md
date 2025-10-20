@@ -327,21 +327,25 @@ You can also get extra credit by getting the highest precision and recall by
 tuning training parameters.  If you have other ideas, just ask, and we
 can say whether your proposal makes sense.
 
-What to turn in 
-----------------
-
-TODO: Update for Gradescope
-
-0. Submit your model file
-1. Submit your `dan_guesser.py` file.
-2. Submit your `analysis.pdf` file. (Please make sure that this is **PDF** file!      No more than one page, include your name at the top of the pdf.)
-3. Upload your model parameters.
-4. (Optional) Upload the wordvectors you use.
-
 Good Enough
 ------------
 
-To get full points on this assignment, you'll need to have an implementation that can get perfect on the `mini-dev` dataset when trained on the `mini-train` dataset.  
+To get full points on this assignment, you'll need to have an implementation that can get perfect on the `mini-dev` dataset when trained on the `mini-train` dataset (6 points). Also, you'll need to pass all test cases in `dan_test.py` (14 points).
+
+What to turn in 
+----------------
+Please make sure that you get model pickles named correctly, or our autograder won't detect and you may lost the points.
+
+**Good Enough**: (20 points)
+1. Submit your `dan_guesser.py` and `parameters.py` file.
+2. Upload your model that train using `mini-train.json.gz` under name `dan_main.torch.pkl`
+3. (optional) `dan_main.data.pkl`  (if you train with MarginRankingLoss)
+
+**Extra Credit**: (5 points)
+1. Submit your `analysis.pdf` file to describe what you've done, either by experimenting ranking-based loss, word representations, parameter tuning, etc. (Please make sure that this is **PDF** file!      No more than one page, include your name at the top of the pdf.)
+2. Upload your model that train using `qanta.guesstrain.json.gz` under name `dan_ec.torch.pkl`
+3. (optional) `dan_ec.data.pkl`  (if you train with MarginRankingLoss)
+4. (Optional) Upload the wordvectors you use.
 
 FAQ
 ----
