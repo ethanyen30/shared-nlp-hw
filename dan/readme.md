@@ -334,7 +334,7 @@ To get full points on this assignment, you'll need to have an implementation tha
 
 What to turn in 
 ----------------
-Please make sure that you get model pickles named correctly, or our autograder won't detect and you may lost the points.
+Please make sure that you get model pickles named correctly, or our autograder won't detect and you may lose the points.
 
 **Good Enough**: (20 points)
 1. Submit your `dan_guesser.py` and `parameters.py` file.
