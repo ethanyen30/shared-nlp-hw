@@ -547,13 +547,20 @@ class QuestionData(Dataset):
     @staticmethod
     def vectorize(ex : str, vocab: Vocab, tokenizer: Callable) -> torch.LongTensor:
         """
-        vectorize a single example based on the word2ind dict.
-        Keyword arguments:
-        exs: list of input questions-type pairs
-        ex: tokenized question sentence (list)
-        label: type of question sentence
-        Output:  vectorized sentence(python list) and label(int)
-        e.g. ['text', 'test', 'is', 'fun'] -> [0, 2, 3, 4]
+        Vectorize a single text example using the vocabulary.
+        
+        Args:
+            ex: Input text string to be vectorized
+            vocab: Vocabulary object mapping tokens to indices
+            tokenizer: Function that tokenizes the input string into a list of tokens
+        
+        Returns:
+            torch.LongTensor: 2D tensor of shape (1, sequence_length) containing token indices
+            
+        Example:
+            Input: "text test is fun"
+            After tokenization: ['text', 'test', 'is', 'fun']
+            Output: tensor([[0, 2, 3, 4]])
         """
 
         assert vocab is not None, "Vocab not initialized"
