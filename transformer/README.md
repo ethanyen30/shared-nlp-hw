@@ -93,7 +93,7 @@ Positional embedding functions similarly to a lookup table, with the crucial dif
 - **Positional Embedding Matrix**: Upon initialization, `PosEmbed` creates a positional embedding matrix `W_pos` of shape `[cfg.n_ctx, cfg.d_model]`, where `cfg.n_ctx` is the maximum sequence length the model can handle, and `cfg.d_model` is the dimensionality of the embeddings. This matrix is a learnable parameter and contains a unique vector for each position in a sequence.
 - **Return Positional Information**: In the `forward` method, your goal is to return the positional embeddings to the input token embeddings. Given an input tensor `tokens` with shape `[batch, position]`, you need to map each position index in the sequences to its corresponding positional embedding vector, resulting in a tensor of shape `[batch, position, d_model]`.
 
-## Question 4: Attention (8 pts)
+## Question 4: Attention (6 pts)
 
 The Attention mechanism is the fundamental component of the Transformer architecture, allowing the model to focus on different parts of the input sequence when performing tasks. In this section, you will implement a multi-head self-attention mechanism. The computation that this module should carry out is the following.
 
@@ -108,3 +108,74 @@ The Attention mechanism is the fundamental component of the Transformer architec
 - **Weighted Sum**: Multiply the attention pattern by the value vectors to obtain `z`, a weighted sum that represents a gathering of information from source tokens to each destination token.
 - **Output Mapping**: Finally, combine the results across all heads and map them back to the original dimension (`d_model`) using `W_O` and `b_O`. This produces the output tensor of the attention mechanism, maintaining the shape `[batch, position, d_model]`.
 
+![Attention](transformer_2.png)
+
+In this section, we will use the [Einstein notation](https://en.wikipedia.org/wiki/Einstein_notation) to define matrix multiplications. In particular, we will use the `einsum` function from the `einops` module ([link to docs](https://einops.rocks/api/einsum/)). This way, we can specify how we want to perform a multiplication between two matrices $A \in \mathbb{R}^{n\times m}$ and $B \in \mathbb{R}^{m\times k}$ in the following way:
+```
+einops.einsum(a, b, 'n m, m k -> n k')
+```
+
+Your task is to fill in the multiplication specifications within the einsum function calls. Replace the placeholder strings `[fill in pattern here]` with the correct dimensionality of the matrices involved, following the pattern `dimA1 dimA2..., dimB1, dimB2... -> dimRes1 dimRes2...`.
+
+
+## Question 5: MLP (4 pts)
+
+The Multi-Layer Perceptron (MLP) is a core component of the Transformer architecture, functioning as a powerful mechanism for capturing complex relationships in the data. Within a Transformer block, the MLP typically takes as input the sum of the residual stream and the output of the attention mechanism.
+The MLP in a Transformer consists of two linear layers separated by a non-linear activation function.
+
+Complete the `forward` method of the `MLP` class. The method receives an input tensor `normalized_resid_mid` with dimensions `[batch, posn, d_model]`, and needs to perform the following steps:
+1. Apply the first linear transformation using `self.W_in` and `self.b_in` to the input tensor. This step increases the dimensionality from `d_model` to `d_mlp`.
+2. Apply a non-linear activation function (GELU, the function `gelu_new` has been imported for this purpose) to the output of step 1.
+3. Apply the second linear transformation using `self.W_out` and `self.b_out` to the result of step 2, reducing the dimensionality back to `d_model`.
+
+**Hint:** here you can implement matrix multiplications using `torch.matmul(tensor1, tensor2)` or the equivalent `tensor1 @ tensor2` notation ([docs](https://pytorch.org/docs/stable/generated/torch.matmul.html)).
+
+## Q6: Transformer Block (2 pts)
+
+Now, we can put together the attention, MLP and layernorms into a single transformer block.
+
+**Warning:** refrain from using in-place operations (e.g., `x += y`) as they might lead to random test failuers due to small numerical differences.
+
+## Q7: Unembedding (2 pts)
+
+
+The unembedding layer transforms the dense vectors back into discrete token representations, effectively reversing the embedding process.
+In the `forward` method, apply a linear transformation to the input tensor `normalized_resid_final` using `W_U` and `b_U`, converting the model's internal representations into logits over the vocabulary.
+
+## Q8: Full Transformer-based Model (3 pts)
+
+This section describes the assembly of a complete Transformer-based model, integrating various components you've previously implemented.
+The `DemoTransformer` class encapsulates the entire model architecture, starting from input token embeddings, adding positional information, processing through multiple Transformer blocks, and finally converting the processed embeddings back into logits over the vocabulary. Your task is to arrange these components within the model's `forward` method.
+
+Hint: you can use a loop over `range(cfg.n_layers)`.
+
+## Q9: Generating Text From a Transformer (Extra Credit - 5 pts)
+
+After assembling and validating the `DemoTransformer` model against the GPT-2 reference architecture, the next step is to bring your model to life by generating text. This section focuses on leveraging the weights of the pre-trained GPT-2 Small model to produce text, emphasizing the application of greedy decoding.
+
+**Loading Pre-trained Weights**
+
+Start by loading the pre-trained GPT-2 Small weights into your `DemoTransformer` model with the following code:
+
+**Greedy Decoding**
+
+Greedy decoding is a straightforward approach to text generation where, at each step, the model selects the word with the highest probability as its next output.
+In this final section of the exercise, you will leverage the pre-trained GPT-2 Small model within your Transformer classes to generate text.
+You are tasked with implementing a function named `greedy_decode` that generates text from an initial sequence of tokens. This function will utilize greedy decoding, selecting the most probable next token at each step.
+
+- **Function Parameters:**
+  - `model`: Your initialized and pre-trained `DemoTransformer` model.
+  - `start_tokens`: A list of token IDs (integers) representing the initial sequence from which to start generating text.
+  - `max_length`: The maximum total number of tokens to generate, including the initial sequence.
+
+- **Decoding Logic:**
+  - The function should begin with the provided `start_tokens` and iteratively generate additional tokens, appending each new token to the sequence.
+  - At each step, the function selects the token with the highest probability as the next addition to the sequence.
+  - Generation continues until either the `max_length` is reached or an end-of-sequence token is generated.
+
+- **Return Value:**
+  - The function should return a list of token IDs, representing the generated sequence including the initial tokens.
+
+  **Hint:** use `tensor.argmax()` to get the token_id with highest logit/probability.
+
+  **Hint:** use `tensor1 = torch.cat((tensor1, tensor2))` to append `tensor2` to `tensor1`.
