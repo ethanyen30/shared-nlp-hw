@@ -157,6 +157,10 @@ After assembling and validating the `DemoTransformer` model against the GPT-2 re
 
 Start by loading the pre-trained GPT-2 Small weights into your `DemoTransformer` model with the following code:
 
+     demo_gpt2 = DemoTransformer(Config(debug=False)).to(device)
+     demo_gpt2.load_state_dict(reference_gpt2.state_dict(), strict=False)
+
+
 **Greedy Decoding**
 
 Greedy decoding is a straightforward approach to text generation where, at each step, the model selects the word with the highest probability as its next output.
