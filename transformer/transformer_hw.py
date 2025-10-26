@@ -214,20 +214,26 @@ def greedy_decode(model, start_tokens, max_new_tokens):
     return generated
 
 if __name__ == "__main__":
+    # Load reference model only when running this file directly
+    reference_gpt2 = HookedTransformer.from_pretrained("gpt2-small", fold_ln=False, center_unembed=False, center_writing_weights=False)
+    
+    reference_text = "Today we are going to implement a Transformer from scratch!"
+    tokens = reference_gpt2.to_tokens(reference_text).to(device)
+    logits, cache = reference_gpt2.run_with_cache(tokens)
+    
     demo_gpt2 = DemoTransformer(Config(debug=False)).to(device)
     demo_gpt2.load_state_dict(reference_gpt2.state_dict(), strict=False)
 
     start_sequence = "Today I was walking home, when suddenly"
     start_tokens = reference_gpt2.to_tokens(start_sequence, prepend_bos=True)
-    max_new_tokens = 20  # Maximum number of tokens to generate
+    max_new_tokens = 20
 
-    # Generate tokens using greedy decoding
     generated_tokens = greedy_decode(demo_gpt2, start_tokens, max_new_tokens)
-
-    # Decode generated tokens back to text
-    generated_text = reference_gpt2.to_string(generated_tokens[1:])
+    # generated_text = reference_gpt2.to_string(generated_tokens[1:])
+    # generated_text = reference_gpt2.to_string(generated_tokens[0]) 
+    generated_text = reference_gpt2.to_string(generated_tokens[0, 1:])
     print("Generated Text:", generated_text)
 
     reference_generation = reference_gpt2.generate(start_sequence, max_new_tokens=max_new_tokens, stop_at_eos=False, do_sample=False)
     assert reference_generation == generated_text, f'{reference_generation} vs {generated_text}'
-    print('The generations match!')    
+    print('The generations match!')
