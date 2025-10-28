@@ -5,37 +5,42 @@ a reasonable human could answer but that computers struggle to answer.
 Tools to Write Your Question
 =======
 
-You are encouraged (but not required) to use this tool:
-https://qantanew.web.app/play
-This app has a task of writing an ADVERSARIAL question about the topic you chose. 
-This question should be writen so that it is answerable with the page title. All the machine guesses surrounding the page content
-are updated as you write the questions, and this way you are informed if you are doing a good job of fooling the computer or not!
-(It has a built in tutorial, but we're looking to improve it, so please give us feedback on it!)
-
 Here are some techniques to write questions systems cannot answer:
 https://www.youtube.com/watch?v=6oZCIOBiSaI
 
 You can see a previous competition we ran here:
 https://sites.google.com/view/qanta/past-events/dec-15-2018?authuser=0
 
-You are however free to download/use any QA systems you'd like or to use them on the web.  Some ideas include:
+You are free to download/use any QA systems you'd like or to use them on the web.  Some ideas include:
 * https://you.com/
 * https://www.bing.com/new
 * https://chat.openai.com/
+* https://www.llama.com/
+* https://deepmind.google/models/gemma/
+* https://aistudio.google.com/
 
 Please share any good ones you find with the rest of the class.
 
 Format of the Question
 ========
 
-As discussed in class, the questions will be pyramidal, since this is the format we'll use for the course project.  
+You'll create two kinds of questions:
+ * One will be pyramidal, since this is the format we've been using for all of the course projects.
+ * The other will be multiple choice (MC), which is the format we'll use for the final exam.
+ 
+You are welcome to share information between the two (i.e., you can turn your
+multiple choice question into a pyramidal question).
+
 Some resources for writing questions:
 https://www.naqt.com/resources/question-writing.html
+
+There are many reasons why MCQA isn't great, but everybody (especially us) uses it because it's easy to grade.
 
 How to describe your question
 =========
 A question requires about a page of explanation with the following subsections:
-* _Question_: The question you asked, why you thought the question is difficult for computers while not as hard for the humans, why you chose this specific topic to ask a question about. If it is pyramidial, why choose to do so? 
+
+* _Question_: The question you asked, why you thought the question is difficult for computers while not as hard for the humans, why you chose this specific topic to ask a question about. If it is pyramidial, why choose to do so?
 * _Guess_: What answer systems provided (make sure to provide details on what systems you tried against). The details may include why you chose this answer system.   
 * _Answer_: What the correct answer should be.  Provide sources with citations.  Wikipedia should not be used as a primary source.  Better sources are peer-reviewed articles (JSTOR is your friend and is available from UMD IPs without a fee), newspapers, books (Google books is good), etc.
 * _Guess Explanation_: Why did the AI provide the answer that it did? Connect it with why you chose this particular answer system and if the guesss it gave matches with your intent of making the question difficult. For the
@@ -66,14 +71,18 @@ Groups
 =========
 
 You can work in groups for this assignment, but it doesn't decrease the
-workload (e.g., if you're N people, you must submit N questions).  Everyone
+workload (e.g., if you're N people, you must submit N pyramical questions and N multiple choice questions).  Everyone
 will get the same score for their submission, and if late days are used it
 will be applied to all members of the group.
 
 What to turn in
 ==========
 
-Turn in both a PDF of the writeup of your question and a json including the raw text of the question and answer to Gradescope. Both examples of both writeup and the json file are included in this directory.
+Turn in both a PDF of the writeup of your question and a json including the
+raw text of the question and answer to Gradescope. Both examples of both
+writeup and the json file are included in this directory.
+
+There should be one tossup and one bonus for each member of the group.
 
 Grading
 ==========
@@ -104,9 +113,9 @@ Writeups will get full points if they:
 FAQ
 ===========
 
-*Q:* Can I submit multiple questions?
+*Q:* Can I submit more questions?
 
-*A:* No, submit your best question.
+*A:* No, submit your best questions.
 
 *Q:* What humans should be able to answer the question?  Is it okay if it's hard?
 
@@ -125,18 +134,3 @@ Also, humans don't memorize a lot of dates.  Some things are tightly tied to dat
 *Q:* What computers should ~not~ be able to answer the questions?
 
 *A:* It's okay if some computers can't answer the questions.  But clearly it would be better if all computers cannot answer the question.  Even better is if they all fail in different ways.  We're not going to focus on particular systems and say that, for instance, it must absolutely stump ChatGPT.
-
-*Q*: Is it sufficient to just fool the interface?
-
-*A*: The (authoring interface)[https://qantanew.web.app/login] is just one QA system, and
- writing a question that stumps it is good, but there are other
- systems out there.  We hope that an advantage of using it will be
- that it will provide you better feedback both on the evidence that
- it's finding as well as providing better clues about how pyramidal
- the question is.  But you should use a variety of systems to check
- your questions and answers.
-
-*Q*: Why does the interface want access to by Google Docs?
-
-*A*: It wants access to Google Docs so you can edit your questions
- there and load them in this interface if you prefer.  
