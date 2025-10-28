@@ -66,6 +66,19 @@ to generate questions or explanations (it probably won't work).  In general,
 adhere to the policy articulated here:
 https://2023.aclweb.org/blog/ACL-2023-policy/
 
+What Can you Write Questions About?
+=========
+
+You can write a question about anything.  We care more about the quality of
+the question than the topic.  If it tests a skill that humans have that
+computers lack, that's fine.  That said, your classmates will try to answer
+these questions, so don't make it too obscene, difficult, obscure, or
+annoying.  You will get more points for questions that are fun and a pleasure
+to answer.
+
+If you're at a loss, we strongly encourage you to write a question about the
+contents of the course.  That's something you now know a lot about (as does
+everyone in the class), so that will be a good topic for the final exam.
 
 Groups
 =========
@@ -75,6 +88,13 @@ workload (e.g., if you're N people, you must submit N pyramical questions and N 
 will get the same score for their submission, and if late days are used it
 will be applied to all members of the group.
 
+Question Security
+==========
+
+Do not share your questions with members of the Maryland Academic Quiz Team
+(present or past) who are not members of the class without explicit permission
+(they---along with course staff---will be our humans evaluating the quality of the questions).
+
 What to turn in
 ==========
 
@@ -83,6 +103,13 @@ raw text of the question and answer to Gradescope. Both examples of both
 writeup and the json file are included in this directory.
 
 There should be one tossup and one bonus for each member of the group.
+
+How do I know if I have a Good Question?
+==========
+
+You should make sure that your teammates / roommates / family can answer the
+question (without knowing the answer).  You only get one chance to test a
+question for the first time, so don't waste it.  
 
 Grading
 ==========
@@ -115,7 +142,7 @@ FAQ
 
 *Q:* Can I submit more questions?
 
-*A:* No, submit your best questions.
+*A:* No, submit your best questions.  However, you will probably need to write many bad questions before you manage to write a good question.
 
 *Q:* What humans should be able to answer the question?  Is it okay if it's hard?
 
