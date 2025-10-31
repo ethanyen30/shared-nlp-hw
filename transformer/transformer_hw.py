@@ -115,12 +115,12 @@ class Attention(nn.Module):
         self, normalized_resid_pre: Float[Tensor, "batch posn d_model"]
     ) -> Float[Tensor, "batch posn d_model"]:
         # Linear Mapping: compute matrices Q, K, and V
-        q = einops.einsum(normalized_resid_pre, self.W_Q, '[fill in pattern here]') + self.b_Q
-        k = einops.einsum(normalized_resid_pre, self.W_K, '[fill in pattern here]') + self.b_K
-        v = einops.einsum(normalized_resid_pre, self.W_V, '[fill in pattern here]') + self.b_V
+        q = einops.einsum(normalized_resid_pre, self.W_Q, 'b p d, n d h -> b n h') + self.b_Q
+        k = einops.einsum(normalized_resid_pre, self.W_K, 'b p d, n d h -> b n h') + self.b_K
+        v = einops.einsum(normalized_resid_pre, self.W_V, 'b p d, n d h -> b n h') + self.b_V
 
         # dot product to compute attention scores
-        a = einops.einsum(q, k, '[fill in pattern here]')
+        a = einops.einsum(q, k, 'b n h, b n h -> b n h')
 
         # re-scale
         a = a / (self.cfg.d_head ** 0.5)
@@ -132,10 +132,10 @@ class Attention(nn.Module):
         a = a.softmax(dim=-1)
 
         # get get weighted sum of values
-        z = einops.einsum(v, a, '[fill in pattern here]')
+        z = einops.einsum(v, a, 'b n h, b n h -> b n h')
 
         # sum over different heads
-        attn_out = einops.einsum(z, self.W_O, '[fill in pattern here]') + self.b_O
+        attn_out = einops.einsum(z, self.W_O, 'b n h, n h d -> b d') + self.b_O
 
         return attn_out
 
