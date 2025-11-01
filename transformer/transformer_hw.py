@@ -45,10 +45,7 @@ class LayerNorm(nn.Module):
         mean = residual.mean((-2, -1))
         var = residual.var(unbiased=False)
         centered = (residual - mean.view(batch, 1, 1))
-        print('CENTERED', torch.mean(centered))
-        print('MEAN', mean)
-        print('VAR', var)
-        return (residual - mean.view(batch, 1, 1))/torch.sqrt(var + self.cfg.layer_norm_eps) * self.w + self.b
+        return ((centered/torch.sqrt(var + self.cfg.layer_norm_eps)) * self.w) + self.b
 
 
 class Embed(nn.Module):
@@ -177,8 +174,11 @@ class TransformerBlock(nn.Module):
         self, resid_pre: Float[Tensor, "batch position d_model"]
     ) -> Float[Tensor, "batch position d_model"]:
         #implement your solution here
-        self.ln1
-        return step3
+        a = self.ln1.forward(resid_pre)
+        b = self.attn.forward(a)
+        c = self.ln2.forward(b)
+        d = self.mlp.forward(c)
+        return d
         
 
 
