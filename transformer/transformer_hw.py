@@ -42,13 +42,13 @@ class LayerNorm(nn.Module):
     def forward(self, residual: Float[Tensor, "batch posn d_model"]) -> Float[Tensor, "batch posn d_model"]:
         # implement your solution here
         batch, posn, d_model = residual.shape
-        mean = residual.mean((-2, -1))
-        var = residual.var(unbiased=False)
+        mean = residual.mean((-2, -1)).view(batch, 1, 1)
+        var = residual.var((-2,-1), unbiased=False).view(batch, 1, 1)
         centered = (residual - mean.view(batch, 1, 1))
         print('CENTERED', torch.mean(centered))
         print('MEAN', mean)
         print('VAR', var)
-        return (residual - mean.view(batch, 1, 1))/torch.sqrt(var + self.cfg.layer_norm_eps) * self.w + self.b
+        return (residual - mean)/torch.sqrt(var + self.cfg.layer_norm_eps) * self.w + self.b
 
 
 class Embed(nn.Module):
@@ -74,7 +74,9 @@ class PosEmbed(nn.Module):
 
     def forward(self, tokens: Int[Tensor, "batch position"]) -> Float[Tensor, "batch position d_model"]:
         #implement your solution here
-        return self.W_pos[tokens % self.cfg.n_ctx]
+        batch, position = tokens.shape
+        indices = torch.arange(position)
+        return self.W_pos[indices].repeat(batch, 1)
 
 
 class Attention(nn.Module):
