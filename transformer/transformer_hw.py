@@ -42,10 +42,13 @@ class LayerNorm(nn.Module):
     def forward(self, residual: Float[Tensor, "batch posn d_model"]) -> Float[Tensor, "batch posn d_model"]:
         # implement your solution here
         batch, posn, d_model = residual.shape
-        mean = residual.mean((-2, -1)).view(batch, 1, 1)
-        var = residual.var(dim=(-2, -1), unbiased=False).view(batch, 1, 1)
-
-        return (residual - mean)/torch.sqrt(var + self.cfg.layer_norm_eps) * self.w + self.b
+        mean = residual.mean((-2, -1))
+        var = residual.var(unbiased=False)
+        centered = (residual - mean.view(batch, 1, 1))
+        print('CENTERED', torch.mean(centered))
+        print('MEAN', mean)
+        print('VAR', var)
+        return (residual - mean.view(batch, 1, 1))/torch.sqrt(var + self.cfg.layer_norm_eps) * self.w + self.b
 
 
 class Embed(nn.Module):
@@ -148,7 +151,11 @@ class MLP(nn.Module):
     def forward(
         self, normalized_resid_mid: Float[Tensor, "batch posn d_model"]
     ) -> Float[Tensor, "batch posn d_model"]:
-      pass
+      # Step 1
+        step1 = torch.matmul(normalized_resid_mid, self.W_in) + self.b_in.view(1,1,-1)
+        step2 = gelu_new(step1)
+        step3 = torch.matmul(step2, self.W_out) + self.b_out.view(1,1,-1)
+        return step3
 
 
 class TransformerBlock(nn.Module):
@@ -164,7 +171,9 @@ class TransformerBlock(nn.Module):
         self, resid_pre: Float[Tensor, "batch position d_model"]
     ) -> Float[Tensor, "batch position d_model"]:
         #implement your solution here
-        pass
+        self.ln1
+        return step3
+        
 
 
 class Unembed(nn.Module):
@@ -179,7 +188,9 @@ class Unembed(nn.Module):
         self, normalized_resid_final: Float[Tensor, "batch position d_model"]
     ) -> Float[Tensor, "batch position d_vocab"]:
         #implement your solution here
-        pass
+        print(normalized_resid_final.shape)
+        unembed = torch.matmul(normalized_resid_final, self.W_U) + self.b_U.view(1,1,-1)
+        return unembed
 
 class DemoTransformer(nn.Module):
     def __init__(self, cfg: Config):
